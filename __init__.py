@@ -53,7 +53,7 @@ class QtdirNotFound(ToolQt4Warning):
 
 SCons.Warnings.enableWarningClass(ToolQt4Warning)
 
-qrcinclude_re = re.compile(r'<file>([^<]*)</file>', re.M)
+qrcinclude_re = re.compile(r'<file[^>]*>([^<]*)</file>', re.M)
 
 def transformToWinePath(path) :
     return os.popen('winepath -w "%s"'%path).read().strip().replace('\\','/')
@@ -351,7 +351,6 @@ def generate(env):
         if not (fullpath is None) : return fullpath
 
         raise Exception("Qt4 command '" + command + "' not found. Tried: " + ', '.join(triedPaths))
-        
 
     CLVar = SCons.Util.CLVar
     Action = SCons.Action.Action
@@ -395,13 +394,13 @@ def generate(env):
         QT4_QRCCXXPREFIX = 'qrc_',
         QT4_MOCDEFPREFIX = '-D',
         QT4_MOCDEFSUFFIX = '',
-        QT4_MOCDEFINES = '${_defines(QT4_MOCDEFPREFIX, CPPDEFINES, QT4_MOCDEFSUFFIX, __env__)}',        
+        QT4_MOCDEFINES = '${_defines(QT4_MOCDEFPREFIX, CPPDEFINES, QT4_MOCDEFSUFFIX, __env__)}',
         QT4_MOCCPPPATH = [],
         QT4_MOCINCFLAGS = '$( ${_concat(QT4_MOCINCPREFIX, QT4_MOCCPPPATH, INCSUFFIX, __env__, RDirs)} $)',
 
         # Commands for the qt4 support ...
         QT4_UICCOM = '$QT4_UIC $QT4_UICFLAGS -o $TARGET $SOURCE',
-        QT4_MOCFROMHCOM = '$QT4_MOC $QT4_MOCDEFINES $QT4_MOCFROMHFLAGS $QT4_MOCINCFLAGS -o $TARGET $SOURCE',        
+        QT4_MOCFROMHCOM = '$QT4_MOC $QT4_MOCDEFINES $QT4_MOCFROMHFLAGS $QT4_MOCINCFLAGS -o $TARGET $SOURCE',
         QT4_MOCFROMCXXCOM = [
             '$QT4_MOC $QT4_MOCDEFINES $QT4_MOCFROMCXXFLAGS $QT4_MOCINCFLAGS -o $TARGET $SOURCE',
             Action(checkMocIncluded,None)],
@@ -619,7 +618,7 @@ def enable_modules(self, modules, debug=False, crosscompiling=False) :
             self.AppendUnique(CPPPATH=[os.path.join("$QTDIR","include","QtAssistant")])
             modules.remove("QtAssistant")
             modules.append("QtAssistantClient")
-        self.AppendUnique(LIBS=[lib+'4'+debugSuffix for lib in modules if lib not in staticModules])
+        self.AppendUnique(LIBS=[lib+debugSuffix+'4' for lib in modules if lib not in staticModules])
         self.PrependUnique(LIBS=[lib+debugSuffix for lib in modules if lib in staticModules])
         if 'QtOpenGL' in modules:
             self.AppendUnique(LIBS=['opengl32'])
