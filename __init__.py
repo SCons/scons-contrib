@@ -160,7 +160,7 @@ class _Automoc:
             # h file with the Q_OBJECT macro found -> add moc_cpp
             moc_cpp = env.Moc4(h)
             moc_o = self.objBuilder(moc_cpp)
-            out_sources.append(moc_o)
+            out_sources.extend(moc_o)
             if self.debug:
                 print "scons: qt4: found Q_OBJECT macro in '%s', moc'ing to '%s'" % (str(h), str(moc_cpp))
         if cpp and self.qo_search.search(cpp_contents):
@@ -268,6 +268,8 @@ class _Automoc:
         out_sources = source[:]
 
         for obj in source:
+            if not self.auto_scan:
+                break
             if isinstance(obj,basestring):  # big kludge!
                 print "scons: qt4: '%s' MAYBE USING AN OLD SCONS VERSION AND NOT CONVERTED TO 'File'. Discarded." % str(obj)
                 continue
@@ -301,7 +303,7 @@ class _Automoc:
         env.Moc4.env = mocBuilderEnv
         env.XMoc4.env = xMocBuilderEnv
 
-        return (target, out_sources)
+        return (target, sorted(set(out_sources)))
 
 AutomocShared = _Automoc('SharedObject')
 AutomocStatic = _Automoc('StaticObject')
