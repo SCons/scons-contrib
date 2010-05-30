@@ -37,6 +37,7 @@ import TestSCons
 test = TestSCons.TestSCons()
 
 test.dir_fixture('image')
+test.file_fixture('SConscript-after','sub/SConscript')
 test.file_fixture('../../../qtenv.py')
 test.file_fixture('../../../../__init__.py','site_scons/site_tools/qt4/__init__.py')
 test.run(stderr=None)

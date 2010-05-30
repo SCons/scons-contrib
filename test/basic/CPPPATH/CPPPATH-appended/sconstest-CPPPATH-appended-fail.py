@@ -36,10 +36,11 @@ import TestSCons
 
 test = TestSCons.TestSCons()
 
-test.dir_fixture('image-fail')
+test.dir_fixture('image')
+test.file_fixture('SConscript-before','sub/SConscript')
 test.file_fixture('../../../qtenv.py')
 test.file_fixture('../../../../__init__.py','site_scons/site_tools/qt4/__init__.py')
-test.run_to_fail()
+test.run(status=2, stderr=None)
 
 test.pass_test()
 
