@@ -426,6 +426,11 @@ __qm_builder = SCons.Builder.Builder(
         action = SCons.Action.Action('$QT4_LRELEASECOM','$QT4_LRELEASECOMSTR'),
         src_suffix = '.ts',
         suffix = '.qm')
+__ex_moc_builder = SCons.Builder.Builder(
+        action = SCons.Action.CommandGeneratorAction(__moc_generator_from_h, {}))
+__ex_uic_builder = SCons.Builder.Builder(
+        action = SCons.Action.Action('$QT4_UICCOM', '$QT4_UICCOMSTR'),
+        src_suffix = '.ui')
 
 def Ts(env, target, source, *args, **kw):
     """
@@ -472,6 +477,39 @@ def Qm(env, target, source, *args, **kw):
     result = []    
     for t in target:
         result.extend(__qm_builder.__call__(env, t, source, **kw))
+
+    return result
+
+def ExplicitMoc4(env, target, source, *args, **kw):
+    """
+    A pseudo-Builder wrapper around the MOC executable of Qt4.
+        lrelease [options] ts-files [-qm qm-file]
+    """
+    if not SCons.Util.is_List(target):
+        target = [target]
+    if not SCons.Util.is_List(source):
+        source = [source]
+
+    result = []
+    for t in target:
+        # Is it a header or a cxx file?
+        result.extend(__ex_moc_builder.__call__(env, t, source, **kw))
+
+    return result
+
+def ExplicitUic4(env, target, source, *args, **kw):
+    """
+    A pseudo-Builder wrapper around the UIC executable of Qt4.
+        lrelease [options] ts-files [-qm qm-file]
+    """
+    if not SCons.Util.is_List(target):
+        target = [target]
+    if not SCons.Util.is_List(source):
+        source = [source]
+
+    result = []
+    for t in target:
+        result.extend(__ex_uic_builder.__call__(env, t, source, **kw))
 
     return result
 
@@ -567,11 +605,15 @@ def generate(env):
     try:
         env.AddMethod(Ts, "Ts")
         env.AddMethod(Qm, "Qm")
+        env.AddMethod(ExplicitMoc4, "ExplicitMoc4")
+        env.AddMethod(ExplicitUic4, "ExplicitUic4")
     except AttributeError:
         # Looks like we use a pre-0.98 version of SCons...
         from SCons.Script.SConscript import SConsEnvironment
         SConsEnvironment.Ts = Ts
         SConsEnvironment.Qm = Qm
+        SConsEnvironment.ExplicitMoc4 = ExplicitMoc4
+        SConsEnvironment.ExplicitUic4 = ExplicitUic4
 
     # Resource builder
     def scanResources(node, env, path, arg):
@@ -648,12 +690,6 @@ def generate(env):
         xMocBld.prefix[cxx] = '$QT4_XMOCCXXPREFIX'
         xMocBld.suffix[cxx] = '$QT4_XMOCCXXSUFFIX'
     env['BUILDERS']['XMoc4'] = xMocBld
-
-    # Add the Uic4 Builder to the list of src_builders (registers the
-    # *.ui extension with the Environment)     
-    static_obj, shared_obj = SCons.Tool.createObjBuilders(env)
-    static_obj.src_builder.append('Uic4')
-    shared_obj.src_builder.append('Uic4')
 
     # We use the emitters of Program / StaticLibrary / SharedLibrary
     # to scan for moc'able files

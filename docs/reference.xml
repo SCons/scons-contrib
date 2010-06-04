@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 
   Copyright (c) 2001-2010 The SCons Foundation
@@ -22,8 +23,6 @@
   WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 -->
-
-<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN"
 "http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd">
 <article>
@@ -40,7 +39,7 @@
       <surname>Baechle</surname>
     </author>
 
-    <pubdate>2010-05-27</pubdate>
+    <pubdate>2010-06-04</pubdate>
   </articleinfo>
 
   <abstract>
@@ -90,16 +89,12 @@
     </section>
 
     <section>
-      <title>Automatic handling of .ui files</title>
+      <title>Handling of .ui files</title>
 
-      <para>The implementation files generated from <literal>.ui</literal>
-      files are handled much the same as yacc or lex files. Each
-      <literal>.ui</literal> file given as a source of Program, Library or
-      SharedLibrary will generate three files, the declaration file, the
-      implementation file and a moc file. Because there are also generated
-      headers, you may need to specify <literal>duplicate=1</literal> in calls
-      to VariantDir. See also the corresponding <literal>Uic4</literal>
-      builder method.</para>
+      <para>TODO: describe in a little more detail.</para>
+
+      <para>See also the corresponding <literal>Uic4</literal> builder method.</para>
+
     </section>
 
     <section>
@@ -155,22 +150,54 @@ env.XMoc4('foo.cpp') # generates foo.moc
     </section>
 
     <section>
-      <title>Uic4</title>
+      <title>ExplicitMoc4</title>
 
-      <para>Builds a header file, an implementation file and a moc file from
-      an .ui file, and returns the corresponding nodes in the above order.
-      This builder is only available after using the tool 'qt4'. Note: you can
-      specify .ui files directly as source files to the Program, Library and
-      SharedLibrary builders without using this builder. Using this builder
-      lets you override the standard naming conventions (be careful: prefixes
-      are always prepended to names of built files; if you don't want
-      prefixes, you may set them to ``).</para>
+      <para>Just like the <literal>Moc4</literal> builder, it builds an output
+file from a moc input file.
+However, it does not use any default prefix or suffix for the filenames.
+You can, and have to, specify the full source and target names explicitly.
+This builder is only available after using the
+tool 'qt4'. It can be your last resort, when you have to moc single files
+from/to exotic filenames.</para>
 
       <para>Example:</para>
 
-      <para><screen>env.Uic4('foo.ui') # -&gt; ['foo.h', 'uic_foo.cc', 'moc_foo.cc']
-env.Uic4(target = Split('include/foo.h gen/uicfoo.cc gen/mocfoo.cc'),
-         source = 'foo.ui') # -&gt; ['include/foo.h', 'gen/uicfoo.cc', 'gen/mocfoo.cc']
+      <para><screen>env.ExplicitMoc4('moced_foo.cxx','foo.h') # generates moced_foo.cxx
+</screen></para>
+    </section>
+
+
+    <section>
+      <title>Uic4</title>
+
+      <para>Builds a header file from an .ui file, where the former
+contains the setup code for a GUI class.
+This builder is only available after using the tool 'qt4'.
+Using this builder lets you override the standard
+naming conventions (be careful: prefixes are always prepended to names of
+built files; if you don't want prefixes, you may set them to ``).
+</para>
+
+      <para>Example:</para>
+
+      <para><screen>env.Uic4('foo.ui') # -> 'ui_foo.h'
+</screen></para>
+    </section>
+
+    <section>
+      <title>ExplicitUic4</title>
+
+      <para>Just like the <literal>Uic4</literal> builder, it builds a header file from a .ui input file.
+However, it does not use any default prefix or suffix for the filenames.
+You can, and have to, specify the full source and target names explicitly.
+This builder is only available after using the
+tool 'qt4'. It can be your last resort, when you have to convert .ui
+files to exotic filenames.
+</para>
+
+      <para>Example:</para>
+
+      <para><screen>env.ExplicitUic4('uiced_foo.hpp','foo.ui') # generates uiced_foo.hpp
 </screen></para>
     </section>
 

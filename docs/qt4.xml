@@ -92,30 +92,55 @@ env.XMoc4('foo.cpp') # generates foo.moc
 </summary>
 </builder>
 
+<builder name="ExplicitMoc4">
+<summary>
+Just like the &b-Moc4; builder, it builds an output file from a moc input file.
+However, it does not use any default prefix or suffix for the filenames.
+You can, and have to, specify the full source and target names explicitly.
+This builder is only available after using the
+tool 'qt4'. It can be your last resort, when you have to moc single files
+from/to exotic filenames.
+Example:
+
+<example>
+env.ExplicitMoc4('moced_foo.cxx','foo.h') # generates moced_foo.cxx
+</example>
+</summary>
+</builder>
 
 
 <builder name="Uic4">
 <summary>
-Builds a header file, an implementation file and a moc file from an .ui file,
-and returns the corresponding nodes in the above order.
-This builder is only available after using the tool 'qt4'. Note: you can
-specify <filename>.ui</filename> files directly as source
-files to the &b-Program;,
-&b-Library; and &b-SharedLibrary; builders
-without using this builder. Using this builder lets you override the standard
+Builds a header file from an .ui file, where the former
+contains the setup code for a GUI class.
+This builder is only available after using the tool 'qt4'.
+Using this builder lets you override the standard
 naming conventions (be careful: prefixes are always prepended to names of
 built files; if you don't want prefixes, you may set them to ``).
 See the &cv-link-QT4DIR; variable for more information.
 Example:
 
 <example>
-env.Uic4('foo.ui') # -> ['foo.h', 'uic_foo.cc', 'moc_foo.cc']
-env.Uic4(target = Split('include/foo.h gen/uicfoo.cc gen/mocfoo.cc'),
-         source = 'foo.ui') # -> ['include/foo.h', 'gen/uicfoo.cc', 'gen/mocfoo.cc']
+env.Uic4('foo.ui') # -> 'ui_foo.h'
 </example>
 </summary>
 </builder>
 
+<builder name="ExplicitUic4">
+<summary>
+Just like the &b-Uic4; builder, it builds a header file from a .ui input file.
+However, it does not use any default prefix or suffix for the filenames.
+You can, and have to, specify the full source and target names explicitly.
+This builder is only available after using the
+tool 'qt4'. It can be your last resort, when you have to convert .ui
+files to exotic filenames.
+Example:
+
+<example>
+env.ExplicitUic4('uiced_foo.hpp','foo.ui') # generates uiced_foo.hpp
+</example>
+</summary>
+</builder>
 
 <builder name="Qrc">
 <summary>
@@ -206,12 +231,8 @@ by setting &cv-link-QT4_AUTOSCAN; to 0. See also the corresponding
 &b-Moc4;
 builder method.
 
-<emphasis Role="strong">Automatic handling of .ui files.</emphasis>
-The implementation files generated from .ui files are handled much the same
-as yacc or lex files. Each .ui file given as a source of Program, Library or
-SharedLibrary will generate three files, the declaration file, the
-implementation file and a moc file. Because there are also generated headers,
-you may need to specify duplicate=1 in calls to VariantDir.
+<emphasis Role="strong">Handling of .ui files.</emphasis>
+TODO: describe a little
 See also the corresponding
 &b-Uic4;
 builder method.

@@ -28,6 +28,10 @@ Test that an appended relative CPPPATH works with generated files.
 
 This is basically the same as CPPPATH.py, but the include path
 is env.Append-ed and everything goes into sub directory "sub".
+The SConscript does not add the necessary path, such that
+the compile run actually fails. Together with the second
+test, this demonstrates that the CPPPATH has an effect.
+
 """
 
 import os.path
