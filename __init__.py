@@ -126,7 +126,8 @@ class _Automoc:
         # cxx and c comment 'eater'
         self.ccomment = re.compile(r'/\*(.*?)\*/')
         self.cxxcomment = re.compile(r'//.*$')
-        #     CURRENTLY THERE IS NO TEST CASE FOR THAT
+        # we also allow Q_OBJECT in a literal string
+        self.literal_qobject = re.compile(r'"[^\n]*Q_OBJECT[^\n]*"')
         
         self.auto_scan = True
         self.auto_scan_strategy = 0
@@ -178,6 +179,7 @@ class _Automoc:
                 if self.gobble_comments:
                     h_contents = self.ccomment.sub('', h_contents)
                     h_contents = self.cxxcomment.sub('', h_contents)
+                h_contents = self.literal_qobject.sub('""', h_contents)
                 break
         if not h and self.debug:
             print "scons: qt4: no header for '%s'." % (str(cpp))
@@ -233,6 +235,7 @@ class _Automoc:
                         if self.gobble_comments:
                             h_contents = self.ccomment.sub('', h_contents)
                             h_contents = self.cxxcomment.sub('', h_contents)
+                        h_contents = self.literal_qobject.sub('""', h_contents)
                         break
                 if not h and self.debug:
                     print "scons: qt4: no header for '%s'." % (str(cpp))
@@ -314,6 +317,7 @@ class _Automoc:
                 if self.gobble_comments:
                     cpp_contents = self.ccomment.sub('', cpp_contents)
                     cpp_contents = self.cxxcomment.sub('', cpp_contents)
+                cpp_contents = self.literal_qobject.sub('""', cpp_contents)
             except: continue # may be an still not generated source
             
             if self.auto_scan_strategy == 0:
