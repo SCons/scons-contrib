@@ -124,40 +124,43 @@ class _Automoc:
         # Q_OBJECT detection
         self.qo_search = re.compile(r'[^A-Za-z0-9]Q_OBJECT[^A-Za-z0-9]')
         # cxx and c comment 'eater'
-        self.ccomment = re.compile(r'/\*(.*?)\*/')
-        self.cxxcomment = re.compile(r'//.*$')
+        self.ccomment = re.compile(r'/\*(.*?)\*/',re.S)
+        self.cxxcomment = re.compile(r'//.*$',re.M)
         # we also allow Q_OBJECT in a literal string
         self.literal_qobject = re.compile(r'"[^\n]*Q_OBJECT[^\n]*"')
         
-        self.auto_scan = True
-        self.auto_scan_strategy = 0
-        self.gobble_comments = 0
-        self.debug = 0
-        
-    def init_env_vars(self, env):
+    def create_automoc_options(self, env):
         """
-        Set some class internal variables, based on the current environment.
+        Create a dictionary with variables related to Automocing,
+        based on the current environment.
         Is executed once in the __call__ routine.  
         """
+        moc_options = {'auto_scan' : True,
+                       'auto_scan_strategy' : 0,
+                       'gobble_comments' : 0,
+                       'debug' : 0}
         try:
             if int(env.subst('$QT4_AUTOSCAN')) == 0:
-                self.auto_scan = False
+                moc_options['auto_scan'] = False
         except ValueError:
             pass
         try:
-            self.auto_scan_strategy = int(env.subst('$QT4_AUTOSCAN_STRATEGY'))
+            moc_options['auto_scan_strategy'] = int(env.subst('$QT4_AUTOSCAN_STRATEGY'))
         except ValueError:
             pass
         try:
-            self.gobble_comments = int(env.subst('$QT4_GOBBLECOMMENTS'))
+            moc_options['gobble_comments'] = int(env.subst('$QT4_GOBBLECOMMENTS'))
         except ValueError:
             pass
         try:
-            self.debug = int(env.subst('$QT4_DEBUG'))
+            moc_options['debug'] = int(env.subst('$QT4_DEBUG'))
         except ValueError:
             pass
+        
+        return moc_options
 
-    def __automoc_strategy_simple(self, env, cpp, cpp_contents, out_sources):
+    def __automoc_strategy_simple(self, env, moc_options, 
+                                  cpp, cpp_contents, out_sources):
         """
         Default Automoc strategy (Q_OBJECT driven): detect a header file
         (alongside the current cpp/cxx) that contains a Q_OBJECT
@@ -173,32 +176,33 @@ class _Automoc:
             hname = self.splitext(cpp.name)[0] + h_ext
             h = find_file(hname, (cpp.get_dir(),), env.File)
             if h:
-                if self.debug:
+                if moc_options['debug']:
                     print "scons: qt4: Scanning '%s' (header of '%s')" % (str(h), str(cpp))
                 h_contents = h.get_contents()
-                if self.gobble_comments:
+                if moc_options['gobble_comments']:
                     h_contents = self.ccomment.sub('', h_contents)
                     h_contents = self.cxxcomment.sub('', h_contents)
                 h_contents = self.literal_qobject.sub('""', h_contents)
                 break
-        if not h and self.debug:
+        if not h and moc_options['debug']:
             print "scons: qt4: no header for '%s'." % (str(cpp))
         if h and self.qo_search.search(h_contents):
             # h file with the Q_OBJECT macro found -> add moc_cpp
             moc_cpp = env.Moc4(h)
             moc_o = self.objBuilder(moc_cpp)
             out_sources.extend(moc_o)
-            if self.debug:
+            if moc_options['debug']:
                 print "scons: qt4: found Q_OBJECT macro in '%s', moc'ing to '%s'" % (str(h), str(moc_cpp))
         if cpp and self.qo_search.search(cpp_contents):
             # cpp file with Q_OBJECT macro found -> add moc
             # (to be included in cpp)
             moc = env.Moc4(cpp)
             env.Ignore(moc, moc)
-            if self.debug:
+            if moc_options['debug']:
                 print "scons: qt4: found Q_OBJECT macro in '%s', moc'ing to '%s'" % (str(cpp), str(moc))
 
-    def __automoc_strategy_include_driven(self, env, cpp, cpp_contents, out_sources):
+    def __automoc_strategy_include_driven(self, env, moc_options,
+                                          cpp, cpp_contents, out_sources):
         """
         Automoc strategy #1 (include driven): searches for "include"
         statements of MOCed files in the current cpp/cxx file.
@@ -229,15 +233,15 @@ class _Automoc:
                     hname = self.splitext(cpp.name)[0] + h_ext
                     h = find_file(hname, (cpp.get_dir(),), env.File)
                     if h:
-                        if self.debug:
+                        if moc_options['debug']:
                             print "scons: qt4: Scanning '%s' (header of '%s')" % (str(h), str(cpp))
                         h_contents = h.get_contents()
-                        if self.gobble_comments:
+                        if moc_options['gobble_comments']:
                             h_contents = self.ccomment.sub('', h_contents)
                             h_contents = self.cxxcomment.sub('', h_contents)
                         h_contents = self.literal_qobject.sub('""', h_contents)
                         break
-                if not h and self.debug:
+                if not h and moc_options['debug']:
                     print "scons: qt4: no header for '%s'." % (str(cpp))
                 if h and self.qo_search.search(h_contents):
                     # h file with the Q_OBJECT macro found -> add moc_cpp
@@ -251,10 +255,10 @@ class _Automoc:
                             if str(s.sources[0]) == h_moc:
                                 out_sources.pop(idx)
                                 break
-                    if self.debug:
+                    if moc_options['debug']:
                         print "scons: qt4: found Q_OBJECT macro in '%s', moc'ing to '%s'" % (str(h), str(h_moc))
                 else:
-                    if self.debug:
+                    if moc_options['debug']:
                         print "scons: qt4: found no Q_OBJECT macro in '%s', but a moc'ed version '%s' gets included in '%s'" % (str(h), inc_h_moc, cpp.name)
 
             if cpp and re.search(inc_cxx_moc, cpp_contents):
@@ -263,22 +267,23 @@ class _Automoc:
                     moc = env.XMoc4(target=cxx_moc, source=cpp)
                     env.Ignore(moc, moc)
                     added = True
-                    if self.debug:
+                    if moc_options['debug']:
                         print "scons: qt4: found Q_OBJECT macro in '%s', moc'ing to '%s'" % (str(cpp), str(moc))
                 else:
-                    if self.debug:
+                    if moc_options['debug']:
                         print "scons: qt4: found no Q_OBJECT macro in '%s', although a moc'ed version '%s' of itself gets included" % (cpp.name, inc_cxx_moc)
 
             if not added:
                 # Fallback to default Automoc strategy (Q_OBJECT driven)
-               self.__automoc_strategy_simple(env, cpp, cpp_contents, out_sources)
+               self.__automoc_strategy_simple(env, cpp, moc_options,
+                                              cpp_contents, out_sources)
         
     def __call__(self, target, source, env):
         """
         Smart autoscan function. Gets the list of objects for the Program
         or Lib. Adds objects and builders for the special qt4 files.
         """
-        self.init_env_vars(env)
+        moc_options = self.create_automoc_options(env)
         
         # some shortcuts used in the scanner
         self.splitext = SCons.Util.splitext
@@ -296,36 +301,38 @@ class _Automoc:
         out_sources = source[:]
 
         for obj in source:
-            if not self.auto_scan:
+            if not moc_options['auto_scan']:
                 break
             if isinstance(obj,basestring):  # big kludge!
                 print "scons: qt4: '%s' MAYBE USING AN OLD SCONS VERSION AND NOT CONVERTED TO 'File'. Discarded." % str(obj)
                 continue
             if not obj.has_builder():
                 # binary obj file provided
-                if self.debug:
+                if moc_options['debug']:
                     print "scons: qt4: '%s' seems to be a binary. Discarded." % str(obj)
                 continue
             cpp = obj.sources[0]
             if not self.splitext(str(cpp))[1] in cxx_suffixes:
-                if self.debug:
+                if moc_options['debug']:
                     print "scons: qt4: '%s' is no cxx file. Discarded." % str(cpp) 
                 # c or fortran source
                 continue
             try:
                 cpp_contents = cpp.get_contents()
-                if self.gobble_comments:
+                if moc_options['gobble_comments']:
                     cpp_contents = self.ccomment.sub('', cpp_contents)
                     cpp_contents = self.cxxcomment.sub('', cpp_contents)
                 cpp_contents = self.literal_qobject.sub('""', cpp_contents)
             except: continue # may be an still not generated source
             
-            if self.auto_scan_strategy == 0:
+            if moc_options['auto_scan_strategy'] == 0:
                 # Default Automoc strategy (Q_OBJECT driven)
-                self.__automoc_strategy_simple(env, cpp, cpp_contents, out_sources)
+                self.__automoc_strategy_simple(env, moc_options,
+                                               cpp, cpp_contents, out_sources)
             else:
                 # Automoc strategy #1 (include driven)
-                self.__automoc_strategy_include_driven(env, cpp, cpp_contents, out_sources)
+                self.__automoc_strategy_include_driven(env, moc_options,
+                                                       cpp, cpp_contents, out_sources)
 
         # restore the original env attributes (FIXME)
         self.objBuilder.env = objBuilderEnv
@@ -365,6 +372,41 @@ def _detect(env):
         "Could not detect Qt 4 installation")
     return None
 
+
+def __scanResources(node, env, path, arg):
+    # Helper function for scanning .qrc resource files
+    # I've been careful on providing names relative to the qrc file
+    # If that was not needed this code could be simplified a lot
+    def recursiveFiles(basepath, path) :
+        result = []
+        for item in os.listdir(os.path.join(basepath, path)) :
+            itemPath = os.path.join(path, item)
+            if os.path.isdir(os.path.join(basepath, itemPath)) :
+                result += recursiveFiles(basepath, itemPath)
+            else:
+                result.append(itemPath)
+        return result
+    contents = node.get_contents()
+    includes = qrcinclude_re.findall(contents)
+    qrcpath = os.path.dirname(node.path)
+    dirs = [included for included in includes if os.path.isdir(os.path.join(qrcpath,included))]
+    # dirs need to include files recursively
+    for dir in dirs :
+        includes.remove(dir)
+        includes+=recursiveFiles(qrcpath,dir)
+    return includes
+
+#
+# Scanners
+#
+__qrcscanner = SCons.Scanner.Scanner(name = 'qrcfile',
+    function = __scanResources,
+    argument = None,
+    skeys = ['.qrc'])
+
+#
+# Action generators
+#
 def __moc_generator_from_h(source, target, env, for_signature):
     pass_defines = False
     try:
@@ -421,7 +463,28 @@ def __mocx_generator_from_cxx(source, target, env, for_signature):
         return ['$QT4_MOC $QT4_MOCFROMCXXFLAGS $QT4_MOCINCFLAGS -o $TARGET $SOURCE',
                 SCons.Action.Action(checkMocIncluded,None)]
 
+def __qrc_generator(source, target, env, for_signature):
+    name_defined = False
+    try:
+        if env.subst('$QT4_QRCFLAGS').find('-name') >= 0:
+            name_defined = True
+    except ValueError:
+        pass
+    
+    if name_defined:
+        return '$QT4_RCC $QT4_QRCFLAGS $SOURCE -o $TARGET'
+    else:
+        qrc_suffix = env.subst('$QT4_QRCSUFFIX')
+        src = str(source[0])
+        if src.endswith(qrc_suffix):
+            qrc_stem = src[:-len(qrc_suffix)]
+        else:
+            qrc_stem = src
+        return '$QT4_RCC $QT4_QRCFLAGS -name %s $SOURCE -o $TARGET' % qrc_stem
 
+#
+# Builders
+#
 __ts_builder = SCons.Builder.Builder(        
         action = SCons.Action.Action('$QT4_LUPDATECOM','$QT4_LUPDATECOMSTR'),
         suffix = '.ts',
@@ -430,19 +493,32 @@ __qm_builder = SCons.Builder.Builder(
         action = SCons.Action.Action('$QT4_LRELEASECOM','$QT4_LRELEASECOMSTR'),
         src_suffix = '.ts',
         suffix = '.qm')
+__qrc_builder = SCons.Builder.Builder(
+        action = SCons.Action.CommandGeneratorAction(__qrc_generator, {}),
+        source_scanner = __qrcscanner,
+        src_suffix = '$QT4_QRCSUFFIX',
+        suffix = '$QT4_QRCCXXSUFFIX',
+        prefix = '$QT4_QRCCXXPREFIX',
+        single_source = 1)
 __ex_moc_builder = SCons.Builder.Builder(
         action = SCons.Action.CommandGeneratorAction(__moc_generator_from_h, {}))
 __ex_uic_builder = SCons.Builder.Builder(
         action = SCons.Action.Action('$QT4_UICCOM', '$QT4_UICCOMSTR'),
         src_suffix = '.ui')
 
-def Ts(env, target, source, *args, **kw):
+
+#
+# Wrappers (pseudo-Builders)
+#
+def Ts4(env, target, source=None, *args, **kw):
     """
     A pseudo-Builder wrapper around the LUPDATE executable of Qt4.
         lupdate [options] [source-file|path]... -ts ts-files
     """
     if not SCons.Util.is_List(target):
         target = [target]
+    if not source:
+        source = target[:]
     if not SCons.Util.is_List(source):
         source = [source]
 
@@ -468,13 +544,15 @@ def Ts(env, target, source, *args, **kw):
 
     return result
 
-def Qm(env, target, source, *args, **kw):
+def Qm4(env, target, source=None, *args, **kw):
     """
     A pseudo-Builder wrapper around the LRELEASE executable of Qt4.
         lrelease [options] ts-files [-qm qm-file]
     """
     if not SCons.Util.is_List(target):
         target = [target]
+    if not source:
+        source = target[:]
     if not SCons.Util.is_List(source):
         source = [source]
 
@@ -484,10 +562,28 @@ def Qm(env, target, source, *args, **kw):
 
     return result
 
+def Qrc4(env, target, source=None, *args, **kw):
+    """
+    A pseudo-Builder wrapper around the RCC executable of Qt4.
+        rcc [options] qrc-files -o out-file
+    """
+    if not SCons.Util.is_List(target):
+        target = [target]
+    if not source:
+        source = target[:]
+    if not SCons.Util.is_List(source):
+        source = [source]
+
+    result = []
+    if len(target):
+        result.extend(__qrc_builder.__call__(env, target[0], source, **kw))
+
+    return result
+
 def ExplicitMoc4(env, target, source, *args, **kw):
     """
     A pseudo-Builder wrapper around the MOC executable of Qt4.
-        lrelease [options] ts-files [-qm qm-file]
+        moc [options] <header-file>
     """
     if not SCons.Util.is_List(target):
         target = [target]
@@ -504,7 +600,7 @@ def ExplicitMoc4(env, target, source, *args, **kw):
 def ExplicitUic4(env, target, source, *args, **kw):
     """
     A pseudo-Builder wrapper around the UIC executable of Qt4.
-        lrelease [options] ts-files [-qm qm-file]
+        uic [options] <uifile>
     """
     if not SCons.Util.is_List(target):
         target = [target]
@@ -561,7 +657,7 @@ def generate(env):
         QT4_AUTOSCAN = 1, # Should the qt4 tool try to figure out, which sources are to be moc'ed?
         QT4_AUTOSCAN_STRATEGY = 0, # While scanning for files to moc, should we search for includes in qtsolutions style?
         QT4_GOBBLECOMMENTS = 0, # If set to 1, comments are removed before scanning cxx/h files.
-        QT4_CPPDEFINES_PASSTOMOC = 0, # If set to 1, all CPPDEFINES get passed to the moc executable.
+        QT4_CPPDEFINES_PASSTOMOC = 1, # If set to 1, all CPPDEFINES get passed to the moc executable.
         QT4_CLEAN_TS = 0, # If set to 1, translation files (.ts) get cleaned on 'scons -c'
         
         # Some Qt4 specific flags. I don't expect someone wants to
@@ -595,7 +691,6 @@ def generate(env):
         QT4_UICCOM = '$QT4_UIC $QT4_UICFLAGS -o $TARGET $SOURCE',
         QT4_LUPDATECOM = '$QT4_LUPDATE $QT4_LUPDATEFLAGS $SOURCES -ts $TARGET',
         QT4_LRELEASECOM = '$QT4_LRELEASE $QT4_LRELEASEFLAGS -qm $TARGET $SOURCES',
-        QT4_RCCCOM = '$QT4_RCC $QT4_QRCFLAGS $SOURCE -o $TARGET',
         
         # Specialized variables for the Extended Automoc support
         # (Strategy #1 for qtsolutions)
@@ -607,53 +702,19 @@ def generate(env):
         )
 
     try:
-        env.AddMethod(Ts, "Ts")
-        env.AddMethod(Qm, "Qm")
+        env.AddMethod(Ts4, "Ts4")
+        env.AddMethod(Qm4, "Qm4")
+        env.AddMethod(Qrc4, "Qrc4")
         env.AddMethod(ExplicitMoc4, "ExplicitMoc4")
         env.AddMethod(ExplicitUic4, "ExplicitUic4")
     except AttributeError:
         # Looks like we use a pre-0.98 version of SCons...
         from SCons.Script.SConscript import SConsEnvironment
-        SConsEnvironment.Ts = Ts
-        SConsEnvironment.Qm = Qm
+        SConsEnvironment.Ts4 = Ts4
+        SConsEnvironment.Qm4 = Qm4
+        SConsEnvironment.Qrc4 = Qrc4
         SConsEnvironment.ExplicitMoc4 = ExplicitMoc4
         SConsEnvironment.ExplicitUic4 = ExplicitUic4
-
-    # Resource builder
-    def scanResources(node, env, path, arg):
-        # I've been careful on providing names relative to the qrc file
-        # If that was not needed this code could be simplified a lot
-        def recursiveFiles(basepath, path) :
-            result = []
-            for item in os.listdir(os.path.join(basepath, path)) :
-                itemPath = os.path.join(path, item)
-                if os.path.isdir(os.path.join(basepath, itemPath)) :
-                    result += recursiveFiles(basepath, itemPath)
-                else:
-                    result.append(itemPath)
-            return result
-        contents = node.get_contents()
-        includes = qrcinclude_re.findall(contents)
-        qrcpath = os.path.dirname(node.path)
-        dirs = [included for included in includes if os.path.isdir(os.path.join(qrcpath,included))]
-        # dirs need to include files recursively
-        for dir in dirs :
-            includes.remove(dir)
-            includes+=recursiveFiles(qrcpath,dir)
-        return includes
-    qrcscanner = SCons.Scanner.Scanner(name = 'qrcfile',
-        function = scanResources,
-        argument = None,
-        skeys = ['.qrc'])
-    qrcbuilder = Builder(
-        action = SCons.Action.Action('$QT4_RCCCOM', '$QT4_RCCCOMSTR'),
-        source_scanner = qrcscanner,
-        src_suffix = '$QT4_QRCSUFFIX',
-        suffix = '$QT4_QRCCXXSUFFIX',
-        prefix = '$QT4_QRCCXXPREFIX',
-        single_source = True
-        )
-    env.Append( BUILDERS = { 'Qrc': qrcbuilder } )
 
     # Interface builder
     uic4builder = Builder(
@@ -694,6 +755,12 @@ def generate(env):
         xMocBld.prefix[cxx] = '$QT4_XMOCCXXPREFIX'
         xMocBld.suffix[cxx] = '$QT4_XMOCCXXSUFFIX'
     env['BUILDERS']['XMoc4'] = xMocBld
+
+    # Add the Qrc4 action to the CXX file builder (registers the
+    # *.qrc extension with the Environment)     
+    cfile_builder, cxxfile_builder = SCons.Tool.createCFileBuilders(env)
+    qrc_act = SCons.Action.CommandGeneratorAction(__qrc_generator, {})
+    cxxfile_builder.add_action('$QT4_QRCSUFFIX', qrc_act)    
 
     # We use the emitters of Program / StaticLibrary / SharedLibrary
     # to scan for moc'able files

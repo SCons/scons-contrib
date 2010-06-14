@@ -31,7 +31,7 @@
     <author>
       <surname>Dirk Baechle</surname>
     </author>
-    <pubdate>2010-06-04</pubdate>    
+    <pubdate>2010-06-15</pubdate>    
   </articleinfo>
 <section id="basics"><title>Basics</title>
 <para>This tool can be used to compile Qt projects, designed for versions 4.x.y and higher.
@@ -207,13 +207,19 @@ env.Program('foo', Glob('*.cpp'))
 </section>
 <section id="resource_files_(.qrc)"><title>Resource files (.qrc)</title>
 <para>Resource files are not built automatically, you always
-have to call the Qrc builder explicitly as
+have to add the names of the <literal>.qrc</literal> files to the source list
+for your program or library:
 </para>
-<screen>qrccc = env.Qrc('foo.qrc') # -> ['qrc_foo.cc']
+<screen>env.Program('foo', Glob('*.cpp')+Glob('*.qrc'))
 </screen>
-<para>or, for assigning a name to the resources,
+<para>For each of the Resource input files, its prefix defines the
+name of the resulting resource. An appropriate <quote><literal>-name</literal></quote> option
+is added to the call of the <literal>rcc</literal> executable
+by default.
 </para>
-<screen>qrccc = env.Qrc(qrc_files, QT4_QRCFLAGS = '-name foolib')
+<para>You can also call the Qrc4 builder explicitly as
+</para>
+<screen>qrccc = env.Qrc4('foo.qrc') # -> ['qrc_foo.cc']
 </screen>
 <para>and then add the resulting cxx file to the sources of your
 Program/Library:
@@ -228,7 +234,7 @@ corresponding builders on your own.
 </para>
 <para>Example for updating a translation file:
 </para>
-<screen>env.Ts('foo.ts','.') # -> ['foo.ts']
+<screen>env.Ts4('foo.ts','.') # -> ['foo.ts']
 </screen>
 <para>By default, the <literal>.ts</literal> files are treated as <emphasis>precious</emphasis> targets. This means that
 they are not removed prior to a rebuild, but simply get updated. Additionally, they
@@ -240,33 +246,33 @@ on the <quote><literal>-c</literal></quote> SCons command, you can set the varia
 <para>Example for releasing a translation file, i.e. compiling
 it to a <literal>.qm</literal> binary file:
 </para>
-<screen>env.Qm('foo.ts') # -> ['foo.qm']
+<screen>env.Qm4('foo.ts') # -> ['foo.qm']
 </screen>
-<para>As an extension both, the Ts() and Qm builder, support the definition of
+<para>As an extension both, the Ts4() and Qm4 builder, support the definition of
 multiple targets. So, calling
 </para>
-<screen>env.Ts(['app_en','app_de'], Glob('*.cpp'))
+<screen>env.Ts4(['app_en','app_de'], Glob('*.cpp'))
 </screen>
 <para>and
 </para>
-<screen>env.Qm(['app','copy'], Glob('*.ts'))
+<screen>env.Qm4(['app','copy'], Glob('*.ts'))
 </screen>
 <para>should work fine.
 </para>
-<para>Finally, two short notes about the support of directories for the Ts() builder. You can
+<para>Finally, two short notes about the support of directories for the Ts4() builder. You can
 pass an arbitrary mix of cxx files and subdirs to it, as in
 </para>
-<screen>env.Ts('app_en',['sub1','appwindow.cpp','main.cpp']))
+<screen>env.Ts4('app_en',['sub1','appwindow.cpp','main.cpp']))
 </screen>
 <para>where <literal>sub1</literal> is a folder that gets scanned recursively for cxx files by <literal>lupdate</literal>.
 But like this, you lose all dependency information for the subdir, i.e. if a file
 inside the folder changes, the .ts file is not updated automatically! In this case
 you should tell SCons to always update the target:
 </para>
-<screen>ts = env.Ts('app_en',['sub1','appwindow.cpp','main.cpp'])
+<screen>ts = env.Ts4('app_en',['sub1','appwindow.cpp','main.cpp'])
 env.AlwaysBuild(ts)
 </screen>
-<para>Last note: specifying the current folder <quote><literal>.</literal></quote> as input to Ts() and storing the resulting
+<para>Last note: specifying the current folder <quote><literal>.</literal></quote> as input to Ts4() and storing the resulting
 .ts file in the same directory, leads to a dependency cycle! You then have to store the .ts
 and .qm files outside of the current folder, or use <literal>Glob('*.cpp'))</literal> instead.
 </para>

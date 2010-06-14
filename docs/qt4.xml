@@ -53,7 +53,6 @@ QT4_MOCCPPPATH
 QT4_MOCINCFLAGS
 QT4_LUPDATECOM
 QT4_LRELEASECOM
-QT4_RCCCOM
 </sets>
 <uses>
 </uses>
@@ -142,7 +141,7 @@ env.ExplicitUic4('uiced_foo.hpp','foo.ui') # generates uiced_foo.hpp
 </summary>
 </builder>
 
-<builder name="Qrc">
+<builder name="Qrc4">
 <summary>
 Builds a cxx file, containing all resources from the given
 .qrc file.
@@ -151,12 +150,12 @@ This builder is only available after using the tool 'qt4'.
 Example:
 
 <example>
-env.Qrc('foo.qrc') # -> ['qrc_foo.cc']
+env.Qrc4('foo.qrc') # -> ['qrc_foo.cc']
 </example>
 </summary>
 </builder>
 
-<builder name="Ts">
+<builder name="Ts4">
 <summary>
 Scans the source files in the given path for tr() marked strings,
 that should get translated. Writes a .ts file for the Qt Linguist.
@@ -165,13 +164,13 @@ This builder is only available after using the tool 'qt4'.
 Example:
 
 <example>
-env.Ts('foo.ts','.') # -> ['foo.ts']
+env.Ts4('foo.ts','.') # -> ['foo.ts']
 </example>
 </summary>
 </builder>
 
 
-<builder name="Qm">
+<builder name="Qm4">
 <summary>
 Compiles a given .ts file (Qt Linguist) into a binary .qm file.
 This builder is only available after using the tool 'qt4'.
@@ -179,7 +178,7 @@ This builder is only available after using the tool 'qt4'.
 Example:
 
 <example>
-env.Qm('foo.ts') # -> ['foo.qm']
+env.Qm4('foo.ts') # -> ['foo.qm']
 </example>
 </summary>
 </builder>
@@ -240,12 +239,12 @@ builder method.
 <emphasis Role="strong">Handling translation files (.ts and .qm).</emphasis>
 TODO: describe a little
 See also the corresponding
-builder methods &b-Ts; and &b-Qm;.
+builder methods &b-Ts4; and &b-Qm4;.
 
 <emphasis Role="strong">Compiling resource files (.qrc).</emphasis>
 TODO: describe a little
 See also the corresponding
-&b-Qrc; builder method.
+&b-Qrc4; builder method.
 
 </summary>
 </cvar>
@@ -414,7 +413,7 @@ file to get moced.
 
 <cvar name="QT4_CPPDEFINES_PASSTOMOC">
 <summary>
-Default value is '0' (disabled). When you set this variable to '1',
+Default value is '1' (enabled). When you set this variable to '1',
 all currently set CPPDEFINES get passed to the moc executable. It does not matter
 which strategy you selected with &cv-link-QT4_AUTOSCAN_STRATEGY; or whether you
 call the &b-Moc4; builder directly.
@@ -424,7 +423,7 @@ call the &b-Moc4; builder directly.
 <cvar name="QT4_CLEAN_TS">
 <summary>
 Default value is '0' (disabled). When you set this variable to '1',
-the &b-Ts; builder will delete your .ts files on a 'scons -c'. Normally,
+the &b-Ts4; builder will delete your .ts files on a 'scons -c'. Normally,
 these files for the QtLinguist are treated as 'precious' (they are not removed
 prior to a rebuild) and do not get cleaned.
 </summary>
@@ -575,18 +574,4 @@ If this is not set, then &cv-link-QT4_RCC; (the command line) is displayed.
 </summary>
 </cvar>
 
-
-<cvar name="QT4_RCCCOM">
-<summary>
-Command to compile a .qrc resource file into a cxx file.
-Is compiled from &cv-link-QT4_RCC; and &cv-link-QT4_QRCFLAGS;.
-</summary>
-</cvar>
-
-<cvar name="QT4_RCCCOMSTR">
-<summary>
-The string displayed when compiling .qrc resource files to a cxx.
-If this is not set, then &cv-link-QT4_RCCCOM; (the command line) is displayed.
-</summary>
-</cvar>
 

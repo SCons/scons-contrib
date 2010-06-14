@@ -2,5 +2,5 @@ Import("qtEnv")
 
 qtEnv['QT4_CLEAN_TS']=1
 
-qtEnv.Ts('my_en.ts', Glob('*.cpp'))
-qtEnv.Qm('my_en','my_en')
+qtEnv.Ts4('my_en.ts', Glob('*.cpp'))
+qtEnv.Qm4('my_en','my_en')

@@ -39,7 +39,7 @@
       <surname>Baechle</surname>
     </author>
 
-    <pubdate>2010-06-04</pubdate>
+    <pubdate>2010-06-15</pubdate>
   </articleinfo>
 
   <abstract>
@@ -102,7 +102,7 @@
 
       <para>TODO: describe in a little more detail.</para>
 
-      <para>See also the corresponding builder methods Ts and Qm.</para>
+      <para>See also the corresponding builder methods Ts4 and Qm4.</para>
     </section>
 
     <section>
@@ -110,7 +110,7 @@
 
       <para>TODO: describe in a little more detail.</para>
 
-      <para>See also the corresponding Qrc builder method.</para>
+      <para>See also the corresponding Qrc4 builder method.</para>
     </section>
   </section>
 
@@ -202,7 +202,7 @@ files to exotic filenames.
     </section>
 
     <section>
-      <title>Qrc</title>
+      <title>Qrc4</title>
 
       <para>Builds a cxx file, containing all resources from the given
       <literal>.qrc</literal> file. This builder is only available after using
@@ -210,12 +210,12 @@ files to exotic filenames.
 
       <para>Example:</para>
 
-      <para><screen>env.Qrc('foo.qrc') # -&gt; ['qrc_foo.cc']
+      <para><screen>env.Qrc4('foo.qrc') # -&gt; ['qrc_foo.cc']
 </screen></para>
     </section>
 
     <section>
-      <title>Ts</title>
+      <title>Ts4</title>
 
       <para>Scans the source files in the given path for tr() marked strings,
       that should get translated. Writes a <literal>.ts</literal> file for the
@@ -224,12 +224,12 @@ files to exotic filenames.
 
       <para>Example:</para>
 
-      <para><screen>env.Ts('foo.ts','.') # -&gt; ['foo.ts']
+      <para><screen>env.Ts4('foo.ts','.') # -&gt; ['foo.ts']
 </screen></para>
     </section>
 
     <section>
-      <title>Qm</title>
+      <title>Qm4</title>
 
       <para>Compiles a given <literal>.ts</literal> file (Qt Linguist) into a
       binary <literal>.qm</literal> file. This builder is only available after
@@ -237,7 +237,7 @@ files to exotic filenames.
 
       <para>Example:</para>
 
-      <para><screen>env.Qm('foo.ts') # -&gt; ['foo.qm']
+      <para><screen>env.Qm4('foo.ts') # -&gt; ['foo.qm']
 </screen></para>
     </section>
   </section>
@@ -480,7 +480,7 @@ files to exotic filenames.
           <term>QT4_CPPDEFINES_PASSTOMOC</term>
 
           <listitem>
-            <para>Default value is '0' (disabled). When you set this variable
+            <para>Default value is '1' (enabled). When you set this variable
             to '1', all currently set CPPDEFINES get passed to the moc
             executable. It does not matter which strategy you selected with
             <literal>QT4_AUTOSCAN_STRATEGY</literal> or whether you call the
@@ -493,7 +493,7 @@ files to exotic filenames.
 
           <listitem>
             <para>Default value is '0' (disabled). When you set this variable
-            to '1', the <literal>Ts</literal> builder will delete your .ts
+            to '1', the <literal>Ts4</literal> builder will delete your .ts
             files on a 'scons -c'. Normally, these files for the QtLinguist
             are treated as 'precious' (they are not removed prior to a
             rebuild) and do not get cleaned.</para>
@@ -693,26 +693,6 @@ files to exotic filenames.
           <listitem>
             <para>The string displayed when converting .ts files to binary .qm
             files. If this is not set, then <literal>QT4_RCC</literal> (the
-            command line) is displayed.</para>
-          </listitem>
-        </varlistentry>
-
-        <varlistentry>
-          <term>QT4_RCCCOM</term>
-
-          <listitem>
-            <para>Command to compile a .qrc resource file into a cxx file. Is
-            compiled from <literal>QT4_RCC</literal> and
-            <literal>QT4_QRCFLAGS</literal>.</para>
-          </listitem>
-        </varlistentry>
-
-        <varlistentry>
-          <term>QT4_RCCCOMSTR</term>
-
-          <listitem>
-            <para>The string displayed when compiling .qrc resource files to a
-            cxx. If this is not set, then <literal>QT4_RCCCOM</literal> (the
             command line) is displayed.</para>
           </listitem>
         </varlistentry>
