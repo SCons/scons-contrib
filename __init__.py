@@ -405,6 +405,29 @@ __qrcscanner = SCons.Scanner.Scanner(name = 'qrcfile',
     skeys = ['.qrc'])
 
 #
+# Emitters
+#
+def __qrc_path(head, prefix, tail, suffix):
+    if head:
+        if tail:
+            return os.path.join(head, "%s%s%s" % (prefix, tail, suffix))
+        else:
+            return "%s%s%s" % (prefix, head, suffix)
+    else:
+        return "%s%s%s" % (prefix, tail, suffix)
+def __qrc_emitter(target, source, env):
+    sourceBase, sourceExt = os.path.splitext(SCons.Util.to_String(source[0]))
+    sHead = None
+    sTail = sourceBase
+    if sourceBase:
+        sHead, sTail = os.path.split(sourceBase)
+
+    t = __qrc_path(sHead, env.subst('$QT4_QRCCXXPREFIX'),
+                   sTail, env.subst('$QT4_QRCCXXSUFFIX'))
+
+    return t, source
+
+#
 # Action generators
 #
 def __moc_generator_from_h(source, target, env, for_signature):
@@ -476,6 +499,10 @@ def __qrc_generator(source, target, env, for_signature):
     else:
         qrc_suffix = env.subst('$QT4_QRCSUFFIX')
         src = str(source[0])
+        head, tail = os.path.split(src)
+        if tail:
+            src = tail
+        qrc_suffix = env.subst('$QT4_QRCSUFFIX')
         if src.endswith(qrc_suffix):
             qrc_stem = src[:-len(qrc_suffix)]
         else:
@@ -575,8 +602,8 @@ def Qrc4(env, target, source=None, *args, **kw):
         source = [source]
 
     result = []
-    if len(target):
-        result.extend(__qrc_builder.__call__(env, target[0], source, **kw))
+    for t, s in zip(target, source):
+        result.extend(__qrc_builder.__call__(env, t, s, **kw))
 
     return result
 
@@ -761,6 +788,7 @@ def generate(env):
     cfile_builder, cxxfile_builder = SCons.Tool.createCFileBuilders(env)
     qrc_act = SCons.Action.CommandGeneratorAction(__qrc_generator, {})
     cxxfile_builder.add_action('$QT4_QRCSUFFIX', qrc_act)    
+    cxxfile_builder.add_emitter('$QT4_QRCSUFFIX', __qrc_emitter)    
 
     # We use the emitters of Program / StaticLibrary / SharedLibrary
     # to scan for moc'able files

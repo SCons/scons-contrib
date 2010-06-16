@@ -317,10 +317,9 @@ env = qtEnv.Clone()
     # Write .qrc files
     if validKey('RESOURCES', pkeys):
         qrc_name = pkeys['RESOURCES'][0]
-        if qrc_name.endswith('.qrc'):
-            qrc_name = qrc_name[:-4]
-        sc.write("env['QT4_QRCFLAGS'] = ['-name', '%s']\n" % qrc_name)
-        sc.write("source_files.append(env.Qrc('%s'))\n" % qrc_name)
+        if not qrc_name.endswith('.qrc'):
+            qrc_name += ".qrc"
+        sc.write("source_files.append(['%s'])\n" % qrc_name)
     
     # Select module
     type = 'Program'
