@@ -275,7 +275,7 @@ class _Automoc:
 
             if not added:
                 # Fallback to default Automoc strategy (Q_OBJECT driven)
-               self.__automoc_strategy_simple(env, cpp, moc_options,
+               self.__automoc_strategy_simple(env, moc_options, cpp,
                                               cpp_contents, out_sources)
         
     def __call__(self, target, source, env):
