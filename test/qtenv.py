@@ -25,23 +25,36 @@
 import os, sys, glob
 from SCons import Environment
 
+def extendQtPath(qtpath):
+    if os.path.exists(os.path.join(qtpath,'qt','bin')):
+        # Looks like a binary install of the Qt4 SDK,
+        # so we add the 'qt' folder to the path...
+        return os.path.join(qtpath,'qt')
+
+    return qtpath
+
 def detectLatestQtVersion():
     if sys.platform.startswith("linux"):
-        # Simple check: inspect only '/usr/local/Trolltech'
+        # Inspect '/usr/local/Trolltech' first...
         paths = glob.glob('/usr/local/Trolltech/*')
         if len(paths):
             paths.sort()
-            return paths[-1]
+            return extendQtPath(paths[-1])
         else:
-            return ""
+            # ...then try to find a binary SDK.
+            paths = glob.glob('/opt/qtsdk-*')
+            if len(paths):
+                paths.sort()
+                return extendQtPath(path[-1])
+            
     else:
-        # Simple check: inspect only 'C:\Qt'
+        # Simple check for Windows: inspect only 'C:\Qt'
         paths = glob.glob('C:\\Qt\\*')
         if len(paths):
             paths.sort()
             return paths[-1]
-        else:
-            return os.environ.get("QTDIR","")
+        
+    return os.environ.get("QTDIR","")
 
 def detectPkgconfigPath(qtdir):
     pkgpath = os.path.join(qtdir, 'lib', 'pkgconfig')

@@ -57,7 +57,7 @@ inc_re = re.compile(r'#include\s+<([^>]+)>')
 # regex for qtLibraryTarget function
 qtlib_re = re.compile(r'\$\$qtLibraryTarget\(([^\)]+)\)')
 # we currently skip all .pro files that use these config values
-complicated_configs = ['qdbus']
+complicated_configs = ['qdbus','phonon']
 # for the following CONFIG values we have to provide default qt modules
 config_modules = {'designer' : ['QtCore','QtGui','QtXml','QtScript','QtDesigner'],
                   'uitools' : ['QtCore','QtGui','QtUiTools'],
@@ -65,9 +65,16 @@ config_modules = {'designer' : ['QtCore','QtGui','QtXml','QtScript','QtDesigner'
                   'core' : ['QtCore'],
                   'qt' : ['QtCore','QtGui'],
                   'xml' : ['QtCore','QtGui','QtXml'],
+                  'webkit' : ['QtCore','QtGui','QtXmlPatterns','QtWebKit'],
                   'network' : ['QtCore','QtGui','QtNetwork'],
                   'svg' : ['QtCore','QtGui','QtSvg'],
+                  'script' : ['QtCore','QtGui','QtScript','QtScriptTools'],
+                  'scripttools' : ['QtCore','QtGui','QtXml','QtScriptTools'],
+                  'multimedia' : ['QtCore','QtGui','QtMultimedia'],
                   'script' : ['QtCore','QtGui','QtScript'],
+                  'help' : ['QtCore','QtGui','QtXml','QtSql','QtNetwork','QtHelp'],
+                  'qaxserver' : ['QtCore','QtGui','QAxFactory'],
+                  'qaxcontainer' : ['QtCore','QtGui','QAxFactory'],
                   'qtestlib' : ['QtCore','QtGui','QtTest'],
                   'qt3support' : ['QtCore','QtGui','Qt3Support'],
                   'opengl' : ['QtCore','QtGui','QtOpenGL']
@@ -105,8 +112,50 @@ valid_qt_modules = [
         'QtWebKit',
         'QtHelp',
         'QtScript',
+        'QAxFactory',
         'QtScriptTools',
         'QtMultimedia']
+
+def extendQtPath(qtpath):
+    if os.path.exists(os.path.join(qtpath,'qt','bin')):
+        # Looks like a binary install of the Qt4 SDK,
+        # so we add the 'qt' folder to the path...
+        return os.path.join(qtpath,'qt')
+
+    return qtpath
+
+def detectLatestQtVersion():
+    if sys.platform.startswith("linux"):
+        # Inspect '/usr/local/Trolltech' first...
+        paths = glob.glob('/usr/local/Trolltech/*')
+        if len(paths):
+            paths.sort()
+            return extendQtPath(paths[-1])
+        else:
+            # ...then try to find a binary SDK.
+            paths = glob.glob('/opt/qtsdk-*')
+            if len(paths):
+                paths.sort()
+                return extendQtPath(path[-1])
+            
+    else:
+        # Simple check for Windows: inspect only 'C:\Qt'
+        paths = glob.glob('C:\\Qt\\*')
+        if len(paths):
+            paths.sort()
+            return paths[-1]
+        
+    return os.environ.get("QTDIR","")
+
+def detectPkgconfigPath(qtdir):
+    pkgpath = os.path.join(qtdir, 'lib', 'pkgconfig')
+    if os.path.exists(os.path.join(pkgpath,'QtCore.pc')):
+        return pkgpath
+    pkgpath = os.path.join(qtdir, 'lib')
+    if os.path.exists(os.path.join(pkgpath,'QtCore.pc')):
+        return pkgpath
+
+    return ""
 
 def parseProFile(fpath):
     """ Parse the .pro file fpath and return the defined
@@ -129,22 +178,24 @@ def parseProFile(fpath):
                     keys[curkey] = curlist
                 
             # Split off optional leading part with "contains():"
-            nkey = kl[0].split(':')[-1]
-            # Open new key
-            curkey = nkey.split()[0]
-            value = kl[1].lstrip()
-            if value.endswith('\\'):
-                # Key is continued on next line
-                value = value[:-1]
-                curlist = value.split()
-            else:
-                # Single line key
-                if keys.has_key(curkey):
-                    keys[curkey].extend(value.split())
+            cl = kl[0].split(':')
+            if (l.find('lesock') < 0) and ((len(cl) < 2) or (cl[0].find('msvc') < 0)):
+                nkey = cl[-1]
+                # Open new key
+                curkey = nkey.split()[0]
+                value = kl[1].lstrip()
+                if value.endswith('\\'):
+                    # Key is continued on next line
+                    value = value[:-1]
+                    curlist = value.split()
                 else:
-                    keys[curkey] = value.split()
-                curkey = None
-                curlist = []
+                    # Single line key
+                    if keys.has_key(curkey):
+                        keys[curkey].extend(value.split())
+                    else:
+                        keys[curkey] = value.split()
+                    curkey = None
+                    curlist = []
         else:
             if l.endswith('\\'):
                 # Continue current key
@@ -266,15 +317,24 @@ def collectModules(dirpath, pkeys):
 def writeSConscript(dirpath, profile, pkeys):
     """ Create a SConscript file in dirpath.
     """
+
+    # Activate modules
+    mods, defines = collectModules(dirpath, pkeys)
+    if validKey('CONFIG', pkeys) and isComplicated(pkeys['CONFIG'][0]):
+        return False
+    allmods = True
+    for m in mods:
+        if m not in pkeys['qtmodules']:
+            print "   no module %s" % m
+            allmods = False
+    if not allmods:
+        return False
+
     sc = open(os.path.join(dirpath,'SConscript'),'w')
     sc.write("""Import('qtEnv')
 
 env = qtEnv.Clone()
 """)
-    # Activate modules
-    mods, defines = collectModules(dirpath, pkeys)
-    if validKey('CONFIG', pkeys) and isComplicated(pkeys['CONFIG'][0]):
-        return
 
     if len(mods):
         sc.write('env.EnableQt4Modules([\n')
@@ -291,6 +351,14 @@ env = qtEnv.Clone()
         sc.write("'%s'\n" % defines[-1])
         sc.write('])\n\n')
     
+    # Add LIBS
+    if validKey('LIBS', pkeys):
+        sc.write('env.AppendUnique(LIBS=[\n')
+        for d in pkeys['LIBS'][:-1]:
+            sc.write("'%s',\n" % d)
+        sc.write("'%s'\n" % pkeys['LIBS'][-1])
+        sc.write('])\n\n')
+ 
     # Add special environment flags
     if len(qtenv_flags):
         for key, value in qtenv_flags.iteritems():    
@@ -346,6 +414,8 @@ env = qtEnv.Clone()
         
     sc.close()
 
+    return True
+
 def writeSConsTestFile(dirpath, folder):
     updirs = dirpath.count('/')+1
     f = open(os.path.join(dirpath, "sconstest-%s.py" % folder),'w')
@@ -387,12 +457,16 @@ def createSConsTest(dirpath, profile, options):
         return
     if validKey('CONFIG', pkeys) and isComplicated(pkeys['CONFIG']):
         return
+    if validKey('QT', pkeys) and isComplicated(pkeys['QT']):
+        return
 
     head, tail = os.path.split(dirpath)
     if head and tail:
         print os.path.join(dirpath, profile)
+        pkeys['qtmodules'] = options['qtmodules']
+        if not writeSConscript(dirpath, profile[:-4], pkeys):
+            return
         writeSConstruct(dirpath)
-        writeSConscript(dirpath, profile[:-4], pkeys)
         writeSConsTestFile(head, tail)
         if options['local']:
             installLocalFiles(dirpath)
@@ -430,9 +504,11 @@ def main():
 
     # Parse command line options
     options = {'local' : False, # Install qtenv.py and qt4.py in local folder
-               'qtpath' : None
+               'qtpath' : None,
+               'pkgconfig' : None
                }
     clean = False
+    qtpath = None
     for o in sys.argv[1:]:
         if o == "-local":
             options['local'] = True
@@ -441,6 +517,23 @@ def main():
         else:
             options['qtpath'] = o
     
+    if not options['qtpath']:
+        qtpath = detectLatestQtVersion()
+        if qtpath == "":
+            print "No Qt installation found!"
+            sys.exit(1)
+
+        options['pkgconfig'] = detectPkgconfigPath(qtpath)
+        if options['pkgconfig'] == "":
+            print "No pkgconfig files found!"
+            sys.exit(1)
+
+        options['qtpath'] = qtpath
+        options['qtmodules'] = []
+        for v in valid_qt_modules:
+            if os.path.exists(os.path.join(options['pkgconfig'],v+'.pc')):
+                options['qtmodules'].append(v)
+
     if not clean:
         doWork = createSConsTest
     else:

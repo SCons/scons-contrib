@@ -33,7 +33,7 @@ test.dir_fixture('image')
 test.file_fixture('../../qtenv.py')
 test.file_fixture('../../../__init__.py','site_scons/site_tools/qt4/__init__.py')
 
-lib_aaa = TestSCons.lib_ + 'aaa' + TestSCons._lib
+lib_aaa = 'aaa_lib' # Alias for the Library
 moc = 'aaa.moc'
 
 test.run(arguments=lib_aaa,
@@ -68,16 +68,15 @@ test.not_up_to_date(options = '-n', arguments = moc)
 
 test.run(options = '-c', arguments = lib_aaa)
 
-test.run(arguments = "variant_dir=1 " + test.workpath('build', lib_aaa),
+test.run(arguments = "variant_dir=1 " + lib_aaa,
          stderr=TestSCons.noisy_ar,
          match=TestSCons.match_re_dotall)
 
-test.run(arguments = "variant_dir=1 chdir=1 " + test.workpath('build', lib_aaa))
+test.run(arguments = "variant_dir=1 chdir=1 " + lib_aaa)
 
 test.must_exist(test.workpath('build', moc))
 
-test.run(arguments = "variant_dir=1 dup=0 " +
-                     test.workpath('build_dup0', lib_aaa),
+test.run(arguments = "variant_dir=1 dup=0 " + lib_aaa,
          stderr=TestSCons.noisy_ar,
          match=TestSCons.match_re_dotall)
 

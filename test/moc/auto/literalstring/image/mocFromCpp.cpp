@@ -1,7 +1,7 @@
-#include <QObject>
-
 #include "mocFromCpp.h"
 
+#include <QObject>
+#include <stdio.h>
 
 class MyClass1
 {
