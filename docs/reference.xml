@@ -39,7 +39,7 @@
       <surname>Baechle</surname>
     </author>
 
-    <pubdate>2010-06-15</pubdate>
+    <pubdate>2010-07-13</pubdate>
   </articleinfo>
 
   <abstract>
@@ -63,13 +63,12 @@
 
       <para>You do not have to specify moc files explicitly, the tool does it
       for you. However, there are a few preconditions to do so: Your header
-      file must have the same filebase as your implementation file and must
-      stay in the same directory. It must have one of the suffixes
-      <literal>.h</literal>, <literal>.hpp</literal>, <literal>.H</literal>,
-      <literal>.hxx</literal>, <literal>.hh</literal>. You can turn off
-      automatic moc file generation by setting <literal>QT4_AUTOSCAN</literal>
-      to 0. See also the corresponding builder method
-      <literal>Moc4()</literal>.</para>
+      file must have the same filebase as your implementation file. It must
+      have one of the suffixes <literal>.h</literal>, <literal>.hpp</literal>,
+      <literal>.H</literal>, <literal>.hxx</literal>, <literal>.hh</literal>.
+      You can turn off automatic moc file generation by setting
+      <literal>QT4_AUTOSCAN</literal> to 0. See also the corresponding builder
+      method <literal>Moc4()</literal>.</para>
     </section>
 
     <section>
@@ -93,8 +92,8 @@
 
       <para>TODO: describe in a little more detail.</para>
 
-      <para>See also the corresponding <literal>Uic4</literal> builder method.</para>
-
+      <para>See also the corresponding <literal>Uic4</literal> builder
+      method.</para>
     </section>
 
     <section>
@@ -153,12 +152,11 @@ env.XMoc4('foo.cpp') # generates foo.moc
       <title>ExplicitMoc4</title>
 
       <para>Just like the <literal>Moc4</literal> builder, it builds an output
-file from a moc input file.
-However, it does not use any default prefix or suffix for the filenames.
-You can, and have to, specify the full source and target names explicitly.
-This builder is only available after using the
-tool 'qt4'. It can be your last resort, when you have to moc single files
-from/to exotic filenames.</para>
+      file from a moc input file. However, it does not use any default prefix
+      or suffix for the filenames. You can, and have to, specify the full
+      source and target names explicitly. This builder is only available after
+      using the tool 'qt4'. It can be your last resort, when you have to moc
+      single files from/to exotic filenames.</para>
 
       <para>Example:</para>
 
@@ -166,34 +164,31 @@ from/to exotic filenames.</para>
 </screen></para>
     </section>
 
-
     <section>
       <title>Uic4</title>
 
-      <para>Builds a header file from an .ui file, where the former
-contains the setup code for a GUI class.
-This builder is only available after using the tool 'qt4'.
-Using this builder lets you override the standard
-naming conventions (be careful: prefixes are always prepended to names of
-built files; if you don't want prefixes, you may set them to ``).
-</para>
+      <para>Builds a header file from an .ui file, where the former contains
+      the setup code for a GUI class. This builder is only available after
+      using the tool 'qt4'. Using this builder lets you override the standard
+      naming conventions (be careful: prefixes are always prepended to names
+      of built files; if you don't want prefixes, you may set them to
+      ``).</para>
 
       <para>Example:</para>
 
-      <para><screen>env.Uic4('foo.ui') # -> 'ui_foo.h'
+      <para><screen>env.Uic4('foo.ui') # -&gt; 'ui_foo.h'
 </screen></para>
     </section>
 
     <section>
       <title>ExplicitUic4</title>
 
-      <para>Just like the <literal>Uic4</literal> builder, it builds a header file from a .ui input file.
-However, it does not use any default prefix or suffix for the filenames.
-You can, and have to, specify the full source and target names explicitly.
-This builder is only available after using the
-tool 'qt4'. It can be your last resort, when you have to convert .ui
-files to exotic filenames.
-</para>
+      <para>Just like the <literal>Uic4</literal> builder, it builds a header
+      file from a .ui input file. However, it does not use any default prefix
+      or suffix for the filenames. You can, and have to, specify the full
+      source and target names explicitly. This builder is only available after
+      using the tool 'qt4'. It can be your last resort, when you have to
+      convert .ui files to exotic filenames.</para>
 
       <para>Example:</para>
 
@@ -461,6 +456,31 @@ files to exotic filenames.
             strategies. If no matching include patterns are found for the
             current cxx file, the Q_OBJECT driven method (#0) is tried as
             fallback.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>QT4_AUTOMOC_SCANCPPPATH</term>
+
+          <listitem>
+            <para>The default is '1', meaning that the tool scans for mocable
+            files not only in the current directory, but also in all CPPPATH
+            folders (see also <literal>QT4_AUTOMOC_CPPPATH</literal>). You can
+            set this variable to '0' to switch it off on rare occasions, e.g.
+            when too many search folders give you a bad performance in large
+            projects.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>QT4_AUTOMOC_CPPPATH</term>
+
+          <listitem>
+            <para>The list of paths to scan for mocable files (see also
+            <literal>QT4_AUTOMOC_SCANCPPPATH</literal>), it is empty by
+            default which means that the CPPPATH variable is used. You can set
+            this variable to a subset of CPPPATH in order to improve
+            performance, i.e. to minimize the search space.</para>
           </listitem>
         </varlistentry>
 

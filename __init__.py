@@ -138,7 +138,9 @@ class _Automoc:
         moc_options = {'auto_scan' : True,
                        'auto_scan_strategy' : 0,
                        'gobble_comments' : 0,
-                       'debug' : 0}
+                       'debug' : 0,
+                       'auto_cpppath' : True,
+                       'cpppaths' : []}
         try:
             if int(env.subst('$QT4_AUTOSCAN')) == 0:
                 moc_options['auto_scan'] = False
@@ -156,6 +158,16 @@ class _Automoc:
             moc_options['debug'] = int(env.subst('$QT4_DEBUG'))
         except ValueError:
             pass
+        try:
+            if int(env.subst('$QT4_AUTOMOC_SCANCPPPATH')) == 0:
+                moc_options['auto_cpppath'] = False
+        except ValueError:
+            pass
+        if moc_options['auto_cpppath']:
+            paths = env.get('QT4_AUTOMOC_CPPPATH', [])
+            if not paths:
+                paths = env.get('CPPPATH', [])
+            moc_options['cpppaths'].extend(paths)
         
         return moc_options
 
@@ -174,7 +186,7 @@ class _Automoc:
             # try to find the header file in the corresponding source
             # directory
             hname = self.splitext(cpp.name)[0] + h_ext
-            h = find_file(hname, (cpp.get_dir(),), env.File)
+            h = find_file(hname, [cpp.get_dir()]+moc_options['cpppaths'], env.File)
             if h:
                 if moc_options['debug']:
                     print "scons: qt4: Scanning '%s' (header of '%s')" % (str(h), str(cpp))
@@ -231,7 +243,7 @@ class _Automoc:
                     # Try to find the header file in the
                     # corresponding source directory
                     hname = self.splitext(cpp.name)[0] + h_ext
-                    h = find_file(hname, (cpp.get_dir(),), env.File)
+                    h = find_file(hname, [cpp.get_dir()]+moc_options['cpppaths'], env.File)
                     if h:
                         if moc_options['debug']:
                             print "scons: qt4: Scanning '%s' (header of '%s')" % (str(h), str(cpp))
@@ -686,7 +698,9 @@ def generate(env):
         QT4_GOBBLECOMMENTS = 0, # If set to 1, comments are removed before scanning cxx/h files.
         QT4_CPPDEFINES_PASSTOMOC = 1, # If set to 1, all CPPDEFINES get passed to the moc executable.
         QT4_CLEAN_TS = 0, # If set to 1, translation files (.ts) get cleaned on 'scons -c'
-        
+        QT4_AUTOMOC_SCANCPPPATH = 1, # If set to 1, the CPPPATHs (or QT4_AUTOMOC_CPPPATH) get scanned for moc'able files
+        QT4_AUTOMOC_CPPPATH = [], # Alternative paths that get scanned for moc files
+
         # Some Qt4 specific flags. I don't expect someone wants to
         # manipulate those ...
         QT4_UICFLAGS = CLVar(''),

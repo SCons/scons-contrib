@@ -16,6 +16,8 @@ QT4_UIC
 QT4_RCC
 QT4_AUTOSCAN
 QT4_AUTOSCAN_STRATEGY
+QT4_AUTOMOC_CPPPATH
+QT4_AUTOMOC_SCANCPPPATH
 QT4_UICFLAGS
 QT4_MOCFROMHFLAGS
 QT4_MOCFROMCXXFLAGS
@@ -398,6 +400,27 @@ then contains a Q_OBJECT macro, it gets moced but is NOT added to the list of so
 This is the important difference between the two strategies. If no matching
 include patterns are found for the current cxx file, the Q_OBJECT driven method (#0)
 is tried as fallback.
+</summary>
+</cvar>
+
+<cvar name="QT4_AUTOMOC_SCANCPPPATH">
+<summary>
+The default is '1', meaning that the tool scans 
+for mocable files not only in the current directory, but
+also in all CPPPATH folders (see also &cv-link-QT4_AUTOMOC_CPPPATH;).
+You can set this variable to '0' to
+switch it off on rare occasions, e.g. when too many search
+folders give you a bad performance in large projects.
+</summary>
+</cvar>
+
+<cvar name="QT4_AUTOMOC_CPPPATH">
+<summary>
+The list of paths to scan for mocable files
+(see also &cv-link-QT4_AUTOMOC_SCANCPPPATH;), it is empty by default
+which means that the CPPPATH variable is used.
+You can set this variable to a subset of CPPPATH in order
+to improve performance, i.e. to minimize the search space.
 </summary>
 </cvar>
 
