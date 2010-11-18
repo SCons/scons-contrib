@@ -33,7 +33,7 @@
       <surname>Dirk Baechle</surname>
     </author>
 
-    <pubdate>2010-07-13</pubdate>
+    <pubdate>2010-11-18</pubdate>
   </articleinfo>
 
   <section id="basics">
@@ -203,7 +203,7 @@ env.Program('foo', Glob('*.cpp'))
     calls the <quote><literal>moc</literal></quote> executable
     accordingly.</para>
 
-    <para>If you do not want this, you can switch off the automocing by
+    <para>If you don't want this, you can switch off the automocing by
     a</para>
 
     <screen>env['QT4_AUTOSCAN'] = 0
@@ -259,7 +259,12 @@ env.Program('foo', Glob('*.cpp'))
 
     <para>You can also call the Qrc4 builder explicitly as</para>
 
-    <screen>qrccc = env.Qrc4('foo.qrc') # -&gt; ['qrc_foo.cc']
+    <screen>qrccc = env.Qrc4('foo') # ['foo.qrc'] -&gt; ['qrc_foo.cc']
+</screen>
+
+    <para>or (overriding the default suffix)</para>
+
+    <screen>qrccc = env.Qrc4('myprefix_foo.cxx','foo.qrc') # -&gt; ['qrc_myprefix_foo.cxx']
 </screen>
 
     <para>and then add the resulting cxx file to the sources of your
@@ -295,7 +300,12 @@ env.Program('foo', Glob('*.cpp'))
     <para>Example for releasing a translation file, i.e. compiling it to a
     <literal>.qm</literal> binary file:</para>
 
-    <screen>env.Qm4('foo.ts') # -&gt; ['foo.qm']
+    <screen>env.Qm4('foo') # ['foo.ts'] -&gt; ['foo.qm']
+</screen>
+
+    <para>or (overriding the output prefix)</para>
+
+    <screen>env.Qm4('myprefix','foo') # ['foo.ts'] -&gt; ['myprefix.qm']
 </screen>
 
     <para>As an extension both, the Ts4() and Qm4 builder, support the
