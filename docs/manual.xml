@@ -33,7 +33,7 @@
       <surname>Dirk Baechle</surname>
     </author>
 
-    <pubdate>2010-11-18</pubdate>
+    <pubdate>2010-12-06</pubdate>
   </articleinfo>
 
   <section id="basics">
@@ -44,55 +44,95 @@
     of the helper tools (<literal>moc</literal>, <literal>uic</literal>)
     behave different.</para>
 
-    <para>For activating the tool "qt4", you have to add its name to the
-    Environment constructor, like this</para>
+    <section id="install">
+      <title>Install</title>
 
-    <screen>env = Environment(tools=['default','qt4'])
+      <para>Installing it, requires you to copy (or, even better: checkout)
+      the contents of the package's <literal>qt4</literal> folder to</para>
+
+      <orderedlist>
+        <listitem>
+          <para><quote><literal>/path_to_your_project/site_scons/site_tools/qt4</literal></quote>,
+          if you need the Qt4 Tool in one project only, or</para>
+        </listitem>
+
+        <listitem>
+          <para><quote><literal>~/.scons/site_scons/site_tools/qt4</literal></quote>,
+          for a system-wide installation under your current login.</para>
+        </listitem>
+      </orderedlist>
+
+      <para>For more infos about this, please refer to</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>the SCons User's Guide, chap. 17.7 "Where to put your custom
+          Builders and Tools" and</para>
+        </listitem>
+
+        <listitem>
+          <para>the SCons Tools Wiki page at <ulink
+          url="http://scons.org/wiki/ToolsIndex">http://scons.org/wiki/ToolsIndex</ulink>.</para>
+        </listitem>
+      </itemizedlist>
+    </section>
+
+    <section id="activation">
+      <title>How to activate</title>
+
+      <para>For activating the tool "qt4", you have to add its name to the
+      Environment constructor, like this</para>
+
+      <screen>env = Environment(tools=['default','qt4'])
 </screen>
 
-    <para>On its startup, the Qt4 tool tries to read the variable
-    <literal>QT4DIR</literal> from the current Environment and
-    <literal>os.environ</literal>. If it is not set, the value of
-    <literal>QTDIR</literal> (in Environment/<literal>os.environ</literal>) is
-    used as a fallback.</para>
+      <para>On its startup, the Qt4 tool tries to read the variable
+      <literal>QT4DIR</literal> from the current Environment and
+      <literal>os.environ</literal>. If it is not set, the value of
+      <literal>QTDIR</literal> (in Environment/<literal>os.environ</literal>)
+      is used as a fallback.</para>
 
-    <para>So, you either have to explicitly give the path of your Qt4
-    installation to the Environment with</para>
+      <para>So, you either have to explicitly give the path of your Qt4
+      installation to the Environment with</para>
 
-    <screen>env['QT4DIR'] = '/usr/local/Trolltech/Qt-4.2.3'
+      <screen>env['QT4DIR'] = '/usr/local/Trolltech/Qt-4.2.3'
 </screen>
 
-    <para>or set the <literal>QT4DIR</literal> as environment variable in your
-    shell.</para>
+      <para>or set the <literal>QT4DIR</literal> as environment variable in
+      your shell.</para>
+    </section>
 
-    <para>Under Linux, "qt4" uses the system tool
-    <literal>pkg-config</literal> for automatically setting the required
-    compile and link flags of the single Qt4 modules (like QtCore, QtGui,...).
-    This means that</para>
+    <section id="requirements">
+      <title>Requirements</title>
 
-    <orderedlist>
-      <listitem>
-        <para>you should have <literal>pkg-config</literal> installed,
-        and</para>
-      </listitem>
+      <para>Under Linux, "qt4" uses the system tool
+      <literal>pkg-config</literal> for automatically setting the required
+      compile and link flags of the single Qt4 modules (like QtCore,
+      QtGui,...). This means that</para>
 
-      <listitem>
-        <para>you additionally have to set <literal>PKG_CONFIG_PATH</literal>
-        in your shell environment, such that it points to
-        $<literal>QT4DIR/lib/pkgconfig</literal> (or
-        $<literal>QT4DIR/lib</literal> for some older versions).</para>
-      </listitem>
-    </orderedlist>
+      <orderedlist>
+        <listitem>
+          <para>you should have <literal>pkg-config</literal> installed,
+          and</para>
+        </listitem>
 
-    <para>Based on these two environment variables (<literal>QT4DIR</literal>
-    and <literal>PKG_CONFIG_PATH</literal>), the "qt4" tool initializes all
-    <literal>QT4_*</literal> construction variables listed in the Reference
-    manual. This happens when the tool is "detected" during Environment
-    construction. As a consequence, the setup of the tool gets a two-stage
-    process, if you want to override the values provided by your current shell
-    settings:</para>
+        <listitem>
+          <para>you additionally have to set
+          <literal>PKG_CONFIG_PATH</literal> in your shell environment, such
+          that it points to $<literal>QT4DIR/lib/pkgconfig</literal> (or
+          $<literal>QT4DIR/lib</literal> for some older versions).</para>
+        </listitem>
+      </orderedlist>
 
-    <screen># Stage 1: create plain environment
+      <para>Based on these two environment variables
+      (<literal>QT4DIR</literal> and <literal>PKG_CONFIG_PATH</literal>), the
+      "qt4" tool initializes all <literal>QT4_*</literal> construction
+      variables listed in the Reference manual. This happens when the tool is
+      "detected" during Environment construction. As a consequence, the setup
+      of the tool gets a two-stage process, if you want to override the values
+      provided by your current shell settings:</para>
+
+      <screen># Stage 1: create plain environment
 qtEnv = Environment()
 # Set new vars
 qtEnv['QT4DIR'] = '/usr/local/Trolltech/Qt-4.2.3
@@ -100,9 +140,10 @@ qtEnv['ENV']['PKG_CONFIG_PATH'] = '/usr/local/Trolltech/Qt-4.2.3/lib/pkgconfig'
 # Stage 2: add qt4 tool
 qtEnv.Tool('qt4')
 </screen>
+    </section>
   </section>
 
-  <section id="suggested_boilerplate">
+  <section id="boilerplate">
     <title>Suggested boilerplate</title>
 
     <para>Based on the requirements above, we suggest a simple ready-to-go
@@ -176,7 +217,7 @@ def detectLatestQtDir():
 </screen>
   </section>
 
-  <section id="a_first_project">
+  <section id="firstproject">
     <title>A first project</title>
 
     <para>The following SConscript is for a simple project with some cxx
@@ -195,7 +236,7 @@ env.Program('foo', Glob('*.cpp'))
 </screen>
   </section>
 
-  <section id="moc_it_up">
+  <section id="mocup">
     <title>MOC it up</title>
 
     <para>For the basic support of automocing, nothing needs to be done by the
@@ -230,7 +271,7 @@ env.Program('foo', Glob('*.cpp'))
     <para>which outputs a lot of messages during automocing.</para>
   </section>
 
-  <section id="forms_(.ui)">
+  <section id="forms">
     <title>Forms (.ui)</title>
 
     <para>The header files with setup code for your GUI classes, are not
@@ -242,7 +283,7 @@ env.Program('foo', Glob('*.cpp'))
 </screen>
   </section>
 
-  <section id="resource_files_(.qrc)">
+  <section id="resources">
     <title>Resource files (.qrc)</title>
 
     <para>Resource files are not built automatically, you always have to add
@@ -274,7 +315,7 @@ env.Program('foo', Glob('*.cpp'))
 </screen>
   </section>
 
-  <section id="translation_files">
+  <section id="translation">
     <title>Translation files</title>
 
     <para>The update of the <literal>.ts</literal> files and the conversion to

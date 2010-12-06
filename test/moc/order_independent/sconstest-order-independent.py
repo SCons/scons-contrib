@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 #
 # Copyright (c) 2001-2010 The SCons Foundation
 #
@@ -19,16 +20,27 @@
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+#
 
+"""
+Ensures that no rebuilds get triggered when the order of the source
+list changes in the Automoc routine(s).
+"""
 
-import os
+import TestSCons
 
-env = Environment(ENV = os.environ,
-                  tools = ['docbook'])
+test = TestSCons.TestSCons()
+test.dir_fixture('image')
+test.file_fixture('../../qtenv.py')
+test.file_fixture('../../../__init__.py','site_scons/site_tools/qt4/__init__.py')
 
-env.DocbookPdf('manual', DOCBOOK_XSL='pdf.xsl')
-env.DocbookPdf('reference', DOCBOOK_XSL='pdf.xsl')
+test.run()
+test.up_to_date(options="-n", arguments=".")
+test.up_to_date(options="-n reverted=1", arguments=".")
+test.pass_test()
 
-env.DocbookHtml('manual', DOCBOOK_XSL='html.xsl')
-env.DocbookHtml('reference', DOCBOOK_XSL='html.xsl')
-
+# Local Variables:
+# tab-width:4
+# indent-tabs-mode:nil
+# End:
+# vim: set expandtab tabstop=4 shiftwidth=4:

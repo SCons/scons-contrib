@@ -351,7 +351,12 @@ class _Automoc:
         env.Moc4.env = mocBuilderEnv
         env.XMoc4.env = xMocBuilderEnv
 
-        return (target, sorted(set(out_sources)))
+        # We return the set of source entries as sorted sequence, else
+        # the order might accidentally change from one build to another
+        # and trigger unwanted rebuilds. For proper sorting, a key function
+        # has to be specified...FS.Entry (and Base nodes in general) do not
+        # provide a __cmp__, for performance reasons. 
+        return (target, sorted(set(out_sources), key=lambda entry : str(entry)))
 
 AutomocShared = _Automoc('SharedObject')
 AutomocStatic = _Automoc('StaticObject')
