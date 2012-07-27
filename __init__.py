@@ -815,6 +815,7 @@ def generate(env):
                                                   {"cmdstr":"$QT4_QRCCOMSTR"})
     cxxfile_builder.add_action('$QT4_QRCSUFFIX', qrc_act)    
     cxxfile_builder.add_emitter('$QT4_QRCSUFFIX', __qrc_emitter)    
+    env.Append(SCANNERS=__qrcscanner)
 
     # We use the emitters of Program / StaticLibrary / SharedLibrary
     # to scan for moc'able files
