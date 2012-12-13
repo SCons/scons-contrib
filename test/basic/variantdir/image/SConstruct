@@ -1,7 +1,7 @@
 import qtenv
 
 qtEnv = qtenv.createQtEnvironment()
-qtEnv.EnableQt5Modules(['QtCore','QtGui'])
+qtEnv.EnableQt5Modules(['QtCore','QtWidgets'])
 
 qtEnv.VariantDir('bld', '.')
 qtEnv.Uic5('bld/anUiFile.ui')

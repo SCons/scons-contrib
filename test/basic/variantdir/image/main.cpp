@@ -2,7 +2,7 @@
 #include "mocFromH.h"
 #include "MyForm.h"
 
-#include <QApplication>
+#include <QtWidgets/QApplication>
 #include <stdio.h>
     
 int main(int argc, char **argv) {

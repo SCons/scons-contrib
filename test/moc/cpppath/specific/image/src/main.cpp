@@ -1,7 +1,7 @@
 #include "mocFromCpp.h"
 #include "mocFromH.h"
 
-#include <QApplication>
+#include <QtWidgets/QApplication>
 #include <stdio.h>
     
 int main(int argc, char **argv)

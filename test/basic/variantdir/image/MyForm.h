@@ -1,6 +1,6 @@
 #include "ui_anUiFile.h"
 
-#include <QWidget>
+#include <QtWidgets/QWidget>
 
 class MyForm : public QWidget
 {

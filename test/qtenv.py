@@ -63,10 +63,10 @@ def detectLatestQtVersion():
 
 def detectPkgconfigPath(qtdir):
     pkgpath = os.path.join(qtdir, 'lib', 'pkgconfig')
-    if os.path.exists(os.path.join(pkgpath,'QtCore.pc')):
+    if os.path.exists(os.path.join(pkgpath,'Qt5Core.pc')):
         return pkgpath
     pkgpath = os.path.join(qtdir, 'lib')
-    if os.path.exists(os.path.join(pkgpath,'QtCore.pc')):
+    if os.path.exists(os.path.join(pkgpath,'Qt5Core.pc')):
         return pkgpath
 
     return ""
@@ -80,6 +80,7 @@ def createQtEnvironment(qtdir=None, env=None):
     if sys.platform.startswith("linux"):
         env['ENV']['PKG_CONFIG_PATH'] = detectPkgconfigPath(qtdir)
     env.Tool('qt5')
+    env.Append(CXXFLAGS=['-fPIC'])
 
     return env
 

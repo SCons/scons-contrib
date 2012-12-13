@@ -847,7 +847,7 @@ def enable_modules(self, modules, debug=False, crosscompiling=False) :
         'QtQuickTest',
         'QtTest',
         'QtWebKit',
-        'QtWebKitWidgets'
+        'QtWebKitWidgets',
         'QtWidgets',
         # Qt Add-Ons
         'QtConcurrent',
