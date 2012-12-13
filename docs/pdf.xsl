@@ -1,7 +1,7 @@
 <?xml version='1.0'?>
 <!--
 
-  Copyright (c) 2001-2010 The SCons Foundation
+  Copyright (c) 2001-2010,2011,2012 The SCons Foundation
 
   Permission is hereby granted, free of charge, to any person obtaining
   a copy of this software and associated documentation files (the

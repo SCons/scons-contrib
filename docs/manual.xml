@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
-  Copyright (c) 2001-2010 The SCons Foundation
+  Copyright (c) 2001-2010,2011,2012 The SCons Foundation
 
   Permission is hereby granted, free of charge, to any person obtaining
   a copy of this software and associated documentation files (the
@@ -26,21 +26,21 @@
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
 "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd">
 <article>
-  <title>The SCons qt4 tool</title>
+  <title>The SCons qt5 tool</title>
 
   <articleinfo>
     <author>
       <surname>Dirk Baechle</surname>
     </author>
 
-    <pubdate>2010-12-06</pubdate>
+    <pubdate>2012-12-13</pubdate>
   </articleinfo>
 
   <section id="basics">
     <title>Basics</title>
 
     <para>This tool can be used to compile Qt projects, designed for versions
-    4.x.y and higher. It is not usable for Qt3 and older versions, since some
+    5.x.y and higher. It is not usable for Qt3 and older versions, since some
     of the helper tools (<literal>moc</literal>, <literal>uic</literal>)
     behave different.</para>
 
@@ -48,16 +48,16 @@
       <title>Install</title>
 
       <para>Installing it, requires you to copy (or, even better: checkout)
-      the contents of the package's <literal>qt4</literal> folder to</para>
+      the contents of the package's <literal>qt5</literal> folder to</para>
 
       <orderedlist>
         <listitem>
-          <para><quote><literal>/path_to_your_project/site_scons/site_tools/qt4</literal></quote>,
-          if you need the Qt4 Tool in one project only, or</para>
+          <para><quote><literal>/path_to_your_project/site_scons/site_tools/qt5</literal></quote>,
+          if you need the Qt5 Tool in one project only, or</para>
         </listitem>
 
         <listitem>
-          <para><quote><literal>~/.scons/site_scons/site_tools/qt4</literal></quote>,
+          <para><quote><literal>~/.scons/site_scons/site_tools/qt5</literal></quote>,
           for a system-wide installation under your current login.</para>
         </listitem>
       </orderedlist>
@@ -80,34 +80,34 @@
     <section id="activation">
       <title>How to activate</title>
 
-      <para>For activating the tool "qt4", you have to add its name to the
+      <para>For activating the tool "qt5", you have to add its name to the
       Environment constructor, like this</para>
 
-      <screen>env = Environment(tools=['default','qt4'])
+      <screen>env = Environment(tools=['default','qt5'])
 </screen>
 
-      <para>On its startup, the Qt4 tool tries to read the variable
-      <literal>QT4DIR</literal> from the current Environment and
+      <para>On its startup, the Qt5 tool tries to read the variable
+      <literal>QT5DIR</literal> from the current Environment and
       <literal>os.environ</literal>. If it is not set, the value of
       <literal>QTDIR</literal> (in Environment/<literal>os.environ</literal>)
       is used as a fallback.</para>
 
-      <para>So, you either have to explicitly give the path of your Qt4
+      <para>So, you either have to explicitly give the path of your Qt5
       installation to the Environment with</para>
 
-      <screen>env['QT4DIR'] = '/usr/local/Trolltech/Qt-4.2.3'
+      <screen>env['QT5DIR'] = '/usr/local/Trolltech/Qt-5.2.3'
 </screen>
 
-      <para>or set the <literal>QT4DIR</literal> as environment variable in
+      <para>or set the <literal>QT5DIR</literal> as environment variable in
       your shell.</para>
     </section>
 
     <section id="requirements">
       <title>Requirements</title>
 
-      <para>Under Linux, "qt4" uses the system tool
+      <para>Under Linux, "qt5" uses the system tool
       <literal>pkg-config</literal> for automatically setting the required
-      compile and link flags of the single Qt4 modules (like QtCore,
+      compile and link flags of the single Qt5 modules (like QtCore,
       QtGui,...). This means that</para>
 
       <orderedlist>
@@ -119,14 +119,14 @@
         <listitem>
           <para>you additionally have to set
           <literal>PKG_CONFIG_PATH</literal> in your shell environment, such
-          that it points to $<literal>QT4DIR/lib/pkgconfig</literal> (or
-          $<literal>QT4DIR/lib</literal> for some older versions).</para>
+          that it points to $<literal>QT5DIR/lib/pkgconfig</literal> (or
+          $<literal>QT5DIR/lib</literal> for some older versions).</para>
         </listitem>
       </orderedlist>
 
       <para>Based on these two environment variables
-      (<literal>QT4DIR</literal> and <literal>PKG_CONFIG_PATH</literal>), the
-      "qt4" tool initializes all <literal>QT4_*</literal> construction
+      (<literal>QT5DIR</literal> and <literal>PKG_CONFIG_PATH</literal>), the
+      "qt5" tool initializes all <literal>QT5_*</literal> construction
       variables listed in the Reference manual. This happens when the tool is
       "detected" during Environment construction. As a consequence, the setup
       of the tool gets a two-stage process, if you want to override the values
@@ -135,10 +135,10 @@
       <screen># Stage 1: create plain environment
 qtEnv = Environment()
 # Set new vars
-qtEnv['QT4DIR'] = '/usr/local/Trolltech/Qt-4.2.3
-qtEnv['ENV']['PKG_CONFIG_PATH'] = '/usr/local/Trolltech/Qt-4.2.3/lib/pkgconfig'
-# Stage 2: add qt4 tool
-qtEnv.Tool('qt4')
+qtEnv['QT5DIR'] = '/usr/local/Trolltech/Qt-5.2.3
+qtEnv['ENV']['PKG_CONFIG_PATH'] = '/usr/local/Trolltech/Qt-5.2.3/lib/pkgconfig'
+# Stage 2: add qt5 tool
+qtEnv.Tool('qt5')
 </screen>
     </section>
   </section>
@@ -160,11 +160,11 @@ baseEnv = Environment()
 
 # Clone Qt environment
 qtEnv = baseEnv.Clone()
-# Set QT4DIR and PKG_CONFIG_PATH
+# Set QT5DIR and PKG_CONFIG_PATH
 qtEnv['ENV']['PKG_CONFIG_PATH'] = os.path.join(qtdir, 'lib/pkgconfig')
-qtEnv['QT4DIR'] = qtdir
-# Add qt4 tool
-qtEnv.Tool('qt4')
+qtEnv['QT5DIR'] = qtdir
+# Add qt5 tool
+qtEnv.Tool('qt5')
 #...further customization of qt env
 
 # Export environments
@@ -176,7 +176,7 @@ Export('baseEnv qtEnv')
 
     <para>In a SConscript</para>
 
-    <screen># Get the Qt4 environment
+    <screen># Get the Qt5 environment
 Import('qtEnv')
 # Clone it
 env = qtEnv.clone()
@@ -190,7 +190,7 @@ env.StaticLibrary('foo', Glob('*.cpp'))
     assigning a fixed path</para>
 
     <screen>def detectLatestQtDir():
-    return "/usr/local/qt4.3.2"
+    return "/usr/local/qt5.3.2"
 </screen>
 
     <para>or a little more sophisticated</para>
@@ -225,7 +225,7 @@ def detectLatestQtDir():
 
     <screen>Import('qtEnv')
 env = qtEnv.Clone()
-env.EnableQt4Modules([
+env.EnableQt5Modules([
                       'QtGui',
                       'QtCore',
                       'QtNetwork'
@@ -247,25 +247,25 @@ env.Program('foo', Glob('*.cpp'))
     <para>If you don't want this, you can switch off the automocing by
     a</para>
 
-    <screen>env['QT4_AUTOSCAN'] = 0
+    <screen>env['QT5_AUTOSCAN'] = 0
 </screen>
 
     <para>in your SConscript file. Then, you have to moc your files
-    explicitly, using the Moc4 builder.</para>
+    explicitly, using the Moc5 builder.</para>
 
     <para>You can also switch to an extended automoc strategy with</para>
 
-    <screen>env['QT4_AUTOSCAN_STRATEGY'] = 1
+    <screen>env['QT5_AUTOSCAN_STRATEGY'] = 1
 </screen>
 
     <para>Please read the description of the
-    <literal>QT4_AUTOSCAN_STRATEGY</literal> variable in the Reference manual
+    <literal>QT5_AUTOSCAN_STRATEGY</literal> variable in the Reference manual
     for details.</para>
 
     <para>For debugging purposes, you can set the variable
-    <literal>QT4_DEBUG</literal> with</para>
+    <literal>QT5_DEBUG</literal> with</para>
 
-    <screen>env['QT4_DEBUG'] = 1
+    <screen>env['QT5_DEBUG'] = 1
 </screen>
 
     <para>which outputs a lot of messages during automocing.</para>
@@ -276,9 +276,9 @@ env.Program('foo', Glob('*.cpp'))
 
     <para>The header files with setup code for your GUI classes, are not
     compiled automatically from your <literal>.ui</literal> files. You always
-    have to call the Uic4 builder explicitly like</para>
+    have to call the Uic5 builder explicitly like</para>
 
-    <screen>env.Uic4(Glob('*.ui'))
+    <screen>env.Uic5(Glob('*.ui'))
 env.Program('foo', Glob('*.cpp'))
 </screen>
   </section>
@@ -298,14 +298,14 @@ env.Program('foo', Glob('*.cpp'))
     <quote><literal>-name</literal></quote> option is added to the call of the
     <literal>rcc</literal> executable by default.</para>
 
-    <para>You can also call the Qrc4 builder explicitly as</para>
+    <para>You can also call the Qrc5 builder explicitly as</para>
 
-    <screen>qrccc = env.Qrc4('foo') # ['foo.qrc'] -&gt; ['qrc_foo.cc']
+    <screen>qrccc = env.Qrc5('foo') # ['foo.qrc'] -&gt; ['qrc_foo.cc']
 </screen>
 
     <para>or (overriding the default suffix)</para>
 
-    <screen>qrccc = env.Qrc4('myprefix_foo.cxx','foo.qrc') # -&gt; ['qrc_myprefix_foo.cxx']
+    <screen>qrccc = env.Qrc5('myprefix_foo.cxx','foo.qrc') # -&gt; ['qrc_myprefix_foo.cxx']
 </screen>
 
     <para>and then add the resulting cxx file to the sources of your
@@ -324,7 +324,7 @@ env.Program('foo', Glob('*.cpp'))
 
     <para>Example for updating a translation file:</para>
 
-    <screen>env.Ts4('foo.ts','.') # -&gt; ['foo.ts']
+    <screen>env.Ts5('foo.ts','.') # -&gt; ['foo.ts']
 </screen>
 
     <para>By default, the <literal>.ts</literal> files are treated as
@@ -333,40 +333,40 @@ env.Program('foo', Glob('*.cpp'))
     not get cleaned on a <quote><literal>scons -c</literal></quote>. If you
     want to delete the translation files on the
     <quote><literal>-c</literal></quote> SCons command, you can set the
-    variable <quote><literal>QT4_CLEAN_TS</literal></quote> like this</para>
+    variable <quote><literal>QT5_CLEAN_TS</literal></quote> like this</para>
 
-    <screen>env['QT4_CLEAN_TS']=1
+    <screen>env['QT5_CLEAN_TS']=1
 </screen>
 
     <para>Example for releasing a translation file, i.e. compiling it to a
     <literal>.qm</literal> binary file:</para>
 
-    <screen>env.Qm4('foo') # ['foo.ts'] -&gt; ['foo.qm']
+    <screen>env.Qm5('foo') # ['foo.ts'] -&gt; ['foo.qm']
 </screen>
 
     <para>or (overriding the output prefix)</para>
 
-    <screen>env.Qm4('myprefix','foo') # ['foo.ts'] -&gt; ['myprefix.qm']
+    <screen>env.Qm5('myprefix','foo') # ['foo.ts'] -&gt; ['myprefix.qm']
 </screen>
 
-    <para>As an extension both, the Ts4() and Qm4 builder, support the
+    <para>As an extension both, the Ts5() and Qm5 builder, support the
     definition of multiple targets. So, calling</para>
 
-    <screen>env.Ts4(['app_en','app_de'], Glob('*.cpp'))
+    <screen>env.Ts5(['app_en','app_de'], Glob('*.cpp'))
 </screen>
 
     <para>and</para>
 
-    <screen>env.Qm4(['app','copy'], Glob('*.ts'))
+    <screen>env.Qm5(['app','copy'], Glob('*.ts'))
 </screen>
 
     <para>should work fine.</para>
 
     <para>Finally, two short notes about the support of directories for the
-    Ts4() builder. You can pass an arbitrary mix of cxx files and subdirs to
+    Ts5() builder. You can pass an arbitrary mix of cxx files and subdirs to
     it, as in</para>
 
-    <screen>env.Ts4('app_en',['sub1','appwindow.cpp','main.cpp']))
+    <screen>env.Ts5('app_en',['sub1','appwindow.cpp','main.cpp']))
 </screen>
 
     <para>where <literal>sub1</literal> is a folder that gets scanned
@@ -375,12 +375,12 @@ env.Program('foo', Glob('*.cpp'))
     the folder changes, the .ts file is not updated automatically! In this
     case you should tell SCons to always update the target:</para>
 
-    <screen>ts = env.Ts4('app_en',['sub1','appwindow.cpp','main.cpp'])
+    <screen>ts = env.Ts5('app_en',['sub1','appwindow.cpp','main.cpp'])
 env.AlwaysBuild(ts)
 </screen>
 
     <para>Last note: specifying the current folder
-    <quote><literal>.</literal></quote> as input to Ts4() and storing the
+    <quote><literal>.</literal></quote> as input to Ts5() and storing the
     resulting .ts file in the same directory, leads to a dependency cycle! You
     then have to store the .ts and .qm files outside of the current folder, or
     use <literal>Glob('*.cpp'))</literal> instead.</para>

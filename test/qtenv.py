@@ -27,7 +27,7 @@ from SCons import Environment
 
 def extendQtPath(qtpath):
     if os.path.exists(os.path.join(qtpath,'qt','bin')):
-        # Looks like a binary install of the Qt4 SDK,
+        # Looks like a binary install of the Qt5 SDK,
         # so we add the 'qt' folder to the path...
         return os.path.join(qtpath,'qt')
 
@@ -35,7 +35,12 @@ def extendQtPath(qtpath):
 
 def detectLatestQtVersion():
     if sys.platform.startswith("linux"):
-        # Inspect '/usr/local/Trolltech' first...
+        # Inspect '/usr/local/Qt' first...
+        paths = glob.glob('/usr/local/Qt-*')
+        if len(paths):
+            paths.sort()
+            return extendQtPath(paths[-1])
+        # Inspect '/usr/local/Trolltech'...
         paths = glob.glob('/usr/local/Trolltech/*')
         if len(paths):
             paths.sort()
@@ -71,10 +76,10 @@ def createQtEnvironment(qtdir=None, env=None):
         env = Environment.Environment(tools=['default'])
     if not qtdir:
         qtdir = detectLatestQtVersion()
-    env['QT4DIR'] = qtdir
+    env['QT5DIR'] = qtdir
     if sys.platform.startswith("linux"):
         env['ENV']['PKG_CONFIG_PATH'] = detectPkgconfigPath(qtdir)
-    env.Tool('qt4')
+    env.Tool('qt5')
 
     return env
 
