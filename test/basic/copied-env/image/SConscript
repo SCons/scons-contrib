@@ -3,7 +3,7 @@ qtEnv.Append(CPPDEFINES = ['FOOBAZ'])
 
 copy = qtEnv.Clone()
 copy.Append(CPPDEFINES = ['MYLIB_IMPL'])
-copy.EnableQt4Modules(['QtCore'])
+copy.EnableQt5Modules(['QtCore'])
 
 copy.SharedLibrary(
    target = 'MyLib',

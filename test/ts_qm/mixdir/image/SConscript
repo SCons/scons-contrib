@@ -1,3 +1,3 @@
 Import("qtEnv")
 
-qtEnv.Ts4('my_en', ['MyFile.cpp','subdir'])
+qtEnv.Ts5('my_en', ['MyFile.cpp','subdir'])

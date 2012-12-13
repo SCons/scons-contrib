@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (c) 2001-2010 The SCons Foundation
+# Copyright (c) 2001-2010,2011,2012 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -26,7 +26,7 @@
 Explicitly sets the path list to scan for mocable files,
 but to a wrong folder.
 Although the correct CPPPATH is used, this lets the test
-fail...and proves that the option QT4_AUTOMOC_CPPPATH
+fail...and proves that the option QT5_AUTOMOC_CPPPATH
 really has an effect.
 """
 
@@ -36,7 +36,7 @@ test = TestSCons.TestSCons()
 test.dir_fixture('image')
 test.file_fixture('SConscript-fails','SConscript')
 test.file_fixture('../../../qtenv.py')
-test.file_fixture('../../../../__init__.py','site_scons/site_tools/qt4/__init__.py')
+test.file_fixture('../../../../__init__.py','site_scons/site_tools/qt5/__init__.py')
 
 test.run(status=2, stderr=None)
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (c) 2001-2010 The SCons Foundation
+# Copyright (c) 2001-2010,2011,2012 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -24,7 +24,7 @@
 
 """
 A simple test for VariantDir, in connection with basic
-automocing from cxx and header files and the Uic4 builder.
+automocing from cxx and header files and the Uic5 builder.
 """
 
 import sys
@@ -34,7 +34,7 @@ import TestSCons
 test = TestSCons.TestSCons()
 test.dir_fixture('image')
 test.file_fixture('../../qtenv.py')
-test.file_fixture('../../../__init__.py','site_scons/site_tools/qt4/__init__.py')
+test.file_fixture('../../../__init__.py','site_scons/site_tools/qt5/__init__.py')
 
 test.run(arguments="bld/test_realqt" + TestSCons._exe)
 

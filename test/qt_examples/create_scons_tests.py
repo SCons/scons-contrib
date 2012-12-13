@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (c) 2001-2010 The SCons Foundation
+# Copyright (c) 2001-2010,2011,2012 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -85,40 +85,51 @@ config_defines = {'plugin' : ['QT_PLUGIN'],
                  }
 
 # dictionary of special Qt Environment settings for all single tests/pro files
-qtenv_flags = {'QT4_GOBBLECOMMENTS' : '1'
+qtenv_flags = {'QT5_GOBBLECOMMENTS' : '1'
               }
 
 # available qt modules
-valid_qt_modules = [
-        'QtCore',
-        'QtGui',
-        'QtOpenGL',
-        'Qt3Support',
-        'QtAssistant', # deprecated
-        'QtAssistantClient',
-        'QtScript',
-        'QtDBus',
-        'QtSql',
-        'QtSvg',
-        # The next modules have not been tested yet so, please
-        # maybe they require additional work on non Linux platforms
-        'QtNetwork',
-        'QtTest',
-        'QtXml',
-        'QtXmlPatterns',
-        'QtUiTools',
-        'QtDesigner',
-        'QtDesignerComponents',
-        'QtWebKit',
-        'QtHelp',
-        'QtScript',
-        'QAxFactory',
-        'QtScriptTools',
-        'QtMultimedia']
+validModules = [
+    # Qt Essentials
+    'QtCore',
+    'QtGui',
+    'QtMultimedia',
+    'QtMultimediaQuick_p',
+    'QtMultimediaWidgets'
+    'QtNetwork',
+    'QtQml',
+    'QtQuick',
+    'QtQuickParticles',
+    'QtSql',
+    'QtQuickTest',
+    'QtTest',
+    'QtWebKit',
+    'QtWebKitWidgets'
+    'QtWidgets',
+    # Qt Add-Ons
+    'QtConcurrent',
+    'QtDBus',
+    'QtOpenGL',
+    'QtPrintSupport',
+    'QtDeclarative',
+    'QtScript',
+    'QtScriptTools',
+    'QtSvg',
+    'QtXml',
+    'QtXmlPatterns',
+    # Qt Tools
+    'QtHelp',
+    'QtDesigner',
+    'QtDesignerComponents',
+    # Other
+    'QtCLucene',
+    'QtConcurrent',
+    'QtV8'
+    ]
 
 def extendQtPath(qtpath):
     if os.path.exists(os.path.join(qtpath,'qt','bin')):
-        # Looks like a binary install of the Qt4 SDK,
+        # Looks like a binary install of the Qt5 SDK,
         # so we add the 'qt' folder to the path...
         return os.path.join(qtpath,'qt')
 
@@ -231,7 +242,7 @@ SConscript('SConscript')
 
 def collectModulesFromFiles(fpath):
     """ Scan source files in dirpath for included
-    Qt4 modules, and return the used modules in a list.
+    Qt5 modules, and return the used modules in a list.
     """
     mods = []
     try:
@@ -257,7 +268,7 @@ def validKey(key, pkeys):
 
 def collectModules(dirpath, pkeys):
     """ Scan source files in dirpath for included
-    Qt4 modules, and return the used modules in a list.
+    Qt5 modules, and return the used modules in a list.
     """
     mods = []
     defines = []
@@ -337,7 +348,7 @@ env = qtEnv.Clone()
 """)
 
     if len(mods):
-        sc.write('env.EnableQt4Modules([\n')
+        sc.write('env.EnableQt5Modules([\n')
         for m in mods[:-1]:
             sc.write("'%s',\n" % m)
         sc.write("'%s'\n" % mods[-1])
@@ -380,7 +391,7 @@ env = qtEnv.Clone()
             sc.write("'%s',\n" % s)
         sc.write("'%s'\n" % pkeys['FORMS'][-1])
         sc.write(']\n')
-        sc.write('env.Uic4(ui_files)\n\n')
+        sc.write('env.Uic5(ui_files)\n\n')
     
     # Write .qrc files
     if validKey('RESOURCES', pkeys):
@@ -425,7 +436,7 @@ import TestSCons
 test = TestSCons.TestSCons()
 test.dir_fixture("%s")
 test.file_fixture('%sqtenv.py')
-test.file_fixture('%s__init__.py','site_scons/site_tools/qt4/__init__.py')
+test.file_fixture('%s__init__.py','site_scons/site_tools/qt5/__init__.py')
 test.run()
 
 test.pass_test()
@@ -436,11 +447,11 @@ def installLocalFiles(dirpath):
     updirs = dirpath.count('/')+1
     shutil.copy(os.path.join(dirpath,'../'*updirs+'qtenv.py'),
                 os.path.join(dirpath,'qtenv.py'))
-    toolpath = os.path.join(dirpath,'site_scons','site_tools','qt4')
+    toolpath = os.path.join(dirpath,'site_scons','site_tools','qt5')
     if not os.path.exists(toolpath):
         os.makedirs(toolpath)
     shutil.copy(os.path.join(dirpath,'../'*(updirs+1)+'__init__.py'),
-                os.path.join(dirpath,'site_scons','site_tools','qt4','__init__.py'))
+                os.path.join(dirpath,'site_scons','site_tools','qt5','__init__.py'))
     
 def isComplicated(keyvalues):
     for s in keyvalues:
@@ -503,7 +514,7 @@ def main():
     """
 
     # Parse command line options
-    options = {'local' : False, # Install qtenv.py and qt4.py in local folder
+    options = {'local' : False, # Install qtenv.py and qt5.py in local folder
                'qtpath' : None,
                'pkgconfig' : None
                }

@@ -12,7 +12,7 @@ if ARGUMENTS.get('variant_dir', 0):
     dup=int(ARGUMENTS.get('dup', 1))
     if dup == 0:
         builddir = 'build_dup0'
-        qtEnv['QT4_DEBUG'] = 1
+        qtEnv['QT5_DEBUG'] = 1
     else:
         builddir = 'build'
     VariantDir(builddir, '.', duplicate=dup)

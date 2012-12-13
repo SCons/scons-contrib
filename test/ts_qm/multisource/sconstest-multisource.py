@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (c) 2001-2010 The SCons Foundation
+# Copyright (c) 2001-2010,2011,2012 The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -33,16 +33,16 @@ import TestSCons
 test = TestSCons.TestSCons()
 test.dir_fixture("image")
 test.file_fixture('../../qtenv.py')
-test.file_fixture('../../../__init__.py','site_scons/site_tools/qt4/__init__.py')
+test.file_fixture('../../../__init__.py','site_scons/site_tools/qt5/__init__.py')
 test.run(stderr=None)
 
 test.must_exist(test.workpath('my_en.ts'))
 test.must_exist(test.workpath('a.ts'))
 test.must_exist(test.workpath('b.ts'))
 test.must_contain(test.workpath('my_en.ts'),'SCons rocks!')
-test.must_contain(test.workpath('my_en.ts'),'And Qt4 too!')
+test.must_contain(test.workpath('my_en.ts'),'And Qt5 too!')
 test.must_contain(test.workpath('a.ts'),'SCons rocks!')
-test.must_contain(test.workpath('b.ts'),'And Qt4 too!')
+test.must_contain(test.workpath('b.ts'),'And Qt5 too!')
 test.must_exist(test.workpath('my_en.qm'))
 
 test.run(options = '-c')
