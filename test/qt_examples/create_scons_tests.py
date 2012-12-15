@@ -73,11 +73,9 @@ config_modules = {'designer' : ['QtCore','QtGui','QtXml','QtScript','QtDesigner'
                   'multimedia' : ['QtCore','QtGui','QtMultimedia'],
                   'script' : ['QtCore','QtGui','QtScript'],
                   'help' : ['QtCore','QtGui','QtXml','QtSql','QtNetwork','QtHelp'],
-                  'qaxserver' : ['QtCore','QtGui','QAxFactory'],
-                  'qaxcontainer' : ['QtCore','QtGui','QAxFactory'],
                   'qtestlib' : ['QtCore','QtGui','QtTest'],
-                  'qt3support' : ['QtCore','QtGui','Qt3Support'],
-                  'opengl' : ['QtCore','QtGui','QtOpenGL']
+                  'opengl' : ['QtCore','QtGui','QtOpenGL'],
+                  'widgets' : ['QtCore','QtGui','QtWidgets']
                   }
 # for the following CONFIG values we have to provide additional CPP defines
 config_defines = {'plugin' : ['QT_PLUGIN'],
@@ -95,16 +93,18 @@ validModules = [
     'QtGui',
     'QtMultimedia',
     'QtMultimediaQuick_p',
-    'QtMultimediaWidgets'
+    'QtMultimediaWidgets',
     'QtNetwork',
+    'QtPlatformSupport',
     'QtQml',
+    'QtQmlDevTools',
     'QtQuick',
     'QtQuickParticles',
     'QtSql',
     'QtQuickTest',
     'QtTest',
     'QtWebKit',
-    'QtWebKitWidgets'
+    'QtWebKitWidgets',
     'QtWidgets',
     # Qt Add-Ons
     'QtConcurrent',
@@ -115,6 +115,7 @@ validModules = [
     'QtScript',
     'QtScriptTools',
     'QtSvg',
+    'QtUiTools',
     'QtXml',
     'QtXmlPatterns',
     # Qt Tools
@@ -137,7 +138,12 @@ def extendQtPath(qtpath):
 
 def detectLatestQtVersion():
     if sys.platform.startswith("linux"):
-        # Inspect '/usr/local/Trolltech' first...
+        # Inspect '/usr/local/Qt' first...
+        paths = glob.glob('/usr/local/Qt-*')
+        if len(paths):
+            paths.sort()
+            return extendQtPath(paths[-1])
+        # Inspect '/usr/local/Trolltech'...
         paths = glob.glob('/usr/local/Trolltech/*')
         if len(paths):
             paths.sort()
@@ -160,10 +166,10 @@ def detectLatestQtVersion():
 
 def detectPkgconfigPath(qtdir):
     pkgpath = os.path.join(qtdir, 'lib', 'pkgconfig')
-    if os.path.exists(os.path.join(pkgpath,'QtCore.pc')):
+    if os.path.exists(os.path.join(pkgpath,'Qt5Core.pc')):
         return pkgpath
     pkgpath = os.path.join(qtdir, 'lib')
-    if os.path.exists(os.path.join(pkgpath,'QtCore.pc')):
+    if os.path.exists(os.path.join(pkgpath,'Qt5Core.pc')):
         return pkgpath
 
     return ""
@@ -254,7 +260,7 @@ def collectModulesFromFiles(fpath):
     
     for m in inc_re.finditer(content):
         mod = m.group(1)
-        if (mod in valid_qt_modules) and (mod not in mods):
+        if (mod in validModules) and (mod not in mods):
             mods.append(mod)
     return mods
 
@@ -541,8 +547,8 @@ def main():
 
         options['qtpath'] = qtpath
         options['qtmodules'] = []
-        for v in valid_qt_modules:
-            if os.path.exists(os.path.join(options['pkgconfig'],v+'.pc')):
+        for v in validModules:
+            if os.path.exists(os.path.join(options['pkgconfig'],v.replace('Qt','Qt5')+'.pc')):
                 options['qtmodules'].append(v)
 
     if not clean:

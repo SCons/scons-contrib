@@ -838,9 +838,11 @@ def enable_modules(self, modules, debug=False, crosscompiling=False) :
         'QtGui',
         'QtMultimedia',
         'QtMultimediaQuick_p',
-        'QtMultimediaWidgets'
+        'QtMultimediaWidgets',
         'QtNetwork',
+        'QtPlatformSupport',
         'QtQml',
+        'QtQmlDevTools',
         'QtQuick',
         'QtQuickParticles',
         'QtSql',
@@ -858,6 +860,7 @@ def enable_modules(self, modules, debug=False, crosscompiling=False) :
         'QtScript',
         'QtScriptTools',
         'QtSvg',
+        'QtUiTools',
         'QtXml',
         'QtXmlPatterns',
         # Qt Tools
