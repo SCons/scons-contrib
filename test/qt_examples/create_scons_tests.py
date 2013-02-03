@@ -56,24 +56,41 @@ h_ext = ['.h', '.hpp', '.hxx']
 inc_re = re.compile(r'#include\s+<([^>]+)>')
 # regex for qtLibraryTarget function
 qtlib_re = re.compile(r'\$\$qtLibraryTarget\(([^\)]+)\)')
+qrcinit_re = re.compile('Q_INIT_RESOURCE\(([^\)]+)\)')
+localvar_re = re.compile("\\$\\$([^/\s]+)")
+qthave_re = re.compile("qtHaveModule\([^\)]+\)\s*:\s")
+
 # we currently skip all .pro files that use these config values
 complicated_configs = ['qdbus','phonon','plugin']
 # for the following CONFIG values we have to provide default qt modules
-config_modules = {'designer' : ['QtCore','QtGui','QtXml','QtScript','QtDesigner'],
+config_modules = {'designer' : ['QtCore','QtGui','QtXml','QtWidgets','QtDesigner','QtDesignerComponents'],
                   'uitools' : ['QtCore','QtGui','QtUiTools'],
                   'assistant' : ['QtCore','QtGui','QtXml','QtScript','QtAssistant'],
                   'core' : ['QtCore'],
+                  'gui' : ['QtCore', 'QtGui'],
+                  'concurrent' : ['QtCore', 'QtConcurrent'],
+                  'dbus' : ['QtCore', 'QtDBus'],
+                  'declarative' : ['QtCore', 'QtGui', 'QtScript', 'QtSql', 'QtNetwork', 'QtWidgets', 'QtXmlPatterns', 'QtDeclarative'],
+                  'printsupport' : ['QtCore', 'QtGui', 'QtWidgets', 'QtPrintSupport'],
+                  'mediawidgets' : ['QtCore', 'QtGui', 'QtOpenGL', 'QtNetwork', 'QtWidgets', 'QtMultimedia', 'QtMultimediaWidgets'],
+                  'webkitwidgets' : ['QtCore', 'QtGui', 'QtOpenGL', 'QtNetwork', 'QtWidgets', 'QtPrintSupport', 'QtWebKit', 'QtQuick', 'QtQml', 'QtSql', 'QtV8', 'QtWebKitWidgets'],
+                  'qml' : ['QtCore', 'QtGui', 'QtNetwork', 'QtV8', 'QtQml'],
+                  'quick' : ['QtCore', 'QtGui', 'QtNetwork', 'QtV8', 'QtQml', 'QtQuick'],
+                  'axcontainer' : [],
+                  'axserver' : [],
+                  'testlib' : ['QtCore', 'QtTest'],
+                  'xmlpatterns' : ['QtCore', 'QtNetwork', 'QtXmlPatterns'],
                   'qt' : ['QtCore','QtGui'],
                   'xml' : ['QtCore','QtGui','QtXml'],
-                  'webkit' : ['QtCore','QtGui','QtXmlPatterns','QtWebKit'],
-                  'network' : ['QtCore','QtGui','QtNetwork'],
-                  'svg' : ['QtCore','QtGui','QtSvg'],
-                  'script' : ['QtCore','QtGui','QtScript','QtScriptTools'],
-                  'scripttools' : ['QtCore','QtGui','QtXml','QtScriptTools'],
-                  'multimedia' : ['QtCore','QtGui','QtMultimedia'],
-                  'script' : ['QtCore','QtGui','QtScript'],
-                  'help' : ['QtCore','QtGui','QtXml','QtSql','QtNetwork','QtHelp'],
-                  'qtestlib' : ['QtCore','QtGui','QtTest'],
+                  'webkit' : ['QtCore','QtGui','QtQuick','QtQml','QtNetwork','QtSql','QtV8','QtWebKit'],
+                  'network' : ['QtCore','QtNetwork'],
+                  'svg' : ['QtCore','QtGui','QtWidgets','QtSvg'],
+                  'script' : ['QtCore','QtScript'],
+                  'scripttools' : ['QtCore','QtGui','QtWidgets','QtScript','QtScriptTools'],
+                  'multimedia' : ['QtCore','QtGui','QtNetwork','QtMultimedia'],
+                  'script' : ['QtCore','QtScript'],
+                  'help' : ['QtCore','QtGui','QtWidgets','QtCLucene','QtSql','QtNetwork','QtHelp'],
+                  'qtestlib' : ['QtCore','QtTest'],
                   'opengl' : ['QtCore','QtGui','QtOpenGL'],
                   'widgets' : ['QtCore','QtGui','QtWidgets']
                   }
@@ -190,8 +207,6 @@ def detectPkgconfigPath(qtdir):
 
     return ""
 
-re_localvar = re.compile("\\$\\$([^/]+)/")
-
 def expandProFile(fpath):
     """ Read the given file into a list of single lines,
         while expanding included files (mainly *.pri)
@@ -219,7 +234,7 @@ def expandProFile(fpath):
             while '$$' in l:
                 # Try to replace the used local variable by
                 # searching back in the content
-                m = re_localvar.search(l)
+                m = localvar_re.search(l)
                 if m:
                     key = m.group(1)
                     tidx = idx-1
@@ -261,6 +276,10 @@ def parseProFile(fpath):
     curkey = None
     curlist = []
     for l in expandProFile(fpath):
+        # Strip off qtHaveModule part
+        m = qthave_re.search(l)
+        if m:
+            l = qthave_re.sub("", l)
         kl = l.split('=')
         if len(kl) > 1:
             # Close old key
@@ -275,7 +294,7 @@ def parseProFile(fpath):
             nkey = nkey.rstrip()
             # Split off optional leading part with "contains():"
             cl = nkey.split(':')
-            if (l.find('lesock') < 0) and ((len(cl) < 2) or (cl[0].find('msvc') < 0)):
+            if ('lesock' not in l) and ((len(cl) < 2) or ('msvc' in cl[0])):
                 nkey = cl[-1]
                 # Open new key
                 curkey = nkey.split()[0]
@@ -341,6 +360,26 @@ def collectModulesFromFiles(fpath):
         if (mod in validModules) and (mod not in mods):
             mods.append(mod)
     return mods
+
+def findQResourceName(fpath):
+    """ Scan the source file fpath and return the name
+        of the QRC instance that gets initialized via
+        QRC_INIT_RESOURCE.
+    """
+    name = ""
+    
+    try:
+        f = open(fpath,'r')
+        content = f.read()
+        f.close()
+    except:
+        return name
+    
+    m = qrcinit_re.search(content)
+    if m:
+        name = m.group(1)
+    
+    return name
 
 def validKey(key, pkeys):
     """ Helper function
@@ -424,11 +463,19 @@ def writeSConscript(dirpath, profile, pkeys):
     if validKey('CONFIG', pkeys) and isComplicated(pkeys['CONFIG'][0]):
         return False
     
+    qrcname = ""
     if not validKey('SOURCES', pkeys):
         # No SOURCES specified, try to find CPP files
-        if len(glob.glob(os.path.join(dirpath,'*.cpp'))) == 0:
+        slist = glob.glob(os.path.join(dirpath,'*.cpp'))
+        if len(slist) == 0:
             # Nothing to build here
-            return False   
+            return False
+        else:
+            # Scan for Q_INIT_RESOURCE
+            for s in slist:
+                qrcname = findQResourceName(s)
+                if qrcname:
+                    break   
     
     allmods = True
     for m in mods:
@@ -494,7 +541,12 @@ env = qtEnv.Clone()
         sc.write('source_files = [\n')
         for s in pkeys['SOURCES'][:-1]:
             sc.write("'%s',\n" % relOrAbsPath(dirpath, s))
+            if not qrcname:
+                qrcname = findQResourceName(os.path.join(dirpath,s))
+
         sc.write("'%s'\n" % relOrAbsPath(dirpath, pkeys['SOURCES'][-1]))
+        if not qrcname:
+            qrcname = findQResourceName(os.path.join(dirpath,pkeys['SOURCES'][-1]))
         sc.write(']\n\n')
     
     # Write .ui files
@@ -509,9 +561,14 @@ env = qtEnv.Clone()
     # Write .qrc files
     if validKey('RESOURCES', pkeys):
         qrc_name = pkeys['RESOURCES'][0]
-        if not qrc_name.endswith('.qrc'):
-            qrc_name += ".qrc"
-        sc.write("source_files.append(['%s'])\n" % qrc_name)
+        if qrcname:
+            if qrc_name.endswith('.qrc'):
+                qrc_name = qrc_name[:-4]
+            sc.write("qrc_out = env.Qrc5('%s')\nsource_files.append(qrc_out)\nenv['QT5_QRCFLAGS'] = ['-name', '%s']\n" % (qrc_name, qrcname))
+        else:
+            if not qrc_name.endswith('.qrc'):
+                qrc_name += '.qrc'
+            sc.write("source_files.append('%s')\n" % qrc_name)
     
     # Select module
     type = 'Program'
@@ -532,7 +589,10 @@ env = qtEnv.Clone()
         
     # Create program/lib/dll
     else:
-        sc.write("env.%s('%s', Glob('*.cpp'))\n\n" % (type, target))
+        if validKey('SOURCES', pkeys):    
+            sc.write("env.%s('%s', source_files)\n\n" % (type, target))
+        else:
+            sc.write("env.%s('%s', Glob('*.cpp'))\n\n" % (type, target))
         
     sc.close()
 
