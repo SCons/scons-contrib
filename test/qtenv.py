@@ -66,14 +66,19 @@ def detectLatestQtVersion():
             
     else:
         # Simple check for Windows: inspect only 'C:\Qt'
-        paths = glob.glob(os.path.join('C:', 'Qt', '*'))
+        paths = glob.glob(os.path.join('C:\\', 'Qt', 'Qt*'))
+        p = ""
         if len(paths):
             paths.sort()
-            # Is it a MinGW or VS installation?
-            p = findMostRecentQtPath(os.path.join(paths[-1], 'mingw*'))
-            if not p:
-                # No MinGW, so try VS...
-                p = findMostRecentQtPath(os.path.join(paths[-1], 'vs*'))
+            # Select version with highest release number
+            paths = glob.glob(os.path.join(paths[-1], '5*'))
+            if len(paths):
+                paths.sort()
+                # Is it a MinGW or VS installation?
+                p = findMostRecentQtPath(os.path.join(paths[-1], 'mingw*'))
+                if not p:
+                    # No MinGW, so try VS...
+                    p = findMostRecentQtPath(os.path.join(paths[-1], 'msvc*'))
         
     return os.environ.get("QT5DIR", p)
 

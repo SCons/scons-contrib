@@ -60,6 +60,8 @@ qrcinit_re = re.compile('Q_INIT_RESOURCE\(([^\)]+)\)')
 localvar_re = re.compile("\\$\\$([^/\s]+)")
 qthave_re = re.compile("qtHaveModule\([^\)]+\)\s*:\s")
 
+updir = '..'+os.sep
+
 # we currently skip all .pro files that use these config values
 complicated_configs = ['qdbus','phonon','plugin']
 # for the following CONFIG values we have to provide default qt modules
@@ -173,27 +175,32 @@ def findMostRecentQtPath(dpath):
 def detectLatestQtVersion():
     if sys.platform.startswith("linux"):
         # Inspect '/usr/local/Qt' first...
-        p = findMostRecentQtPath('/usr/local/Qt-*')
+        p = findMostRecentQtPath(os.path.join('/usr','local','Qt-*'))
         if not p:
             # ... then inspect '/usr/local/Trolltech'...
-            p = findMostRecentQtPath('/usr/local/Trolltech/*')
+            p = findMostRecentQtPath(os.path.join('/usr','local','Trolltech','*'))
         if not p:
             # ...then try to find a binary install...
-            p = findMostRecentQtPath('/opt/Qt*')
+            p = findMostRecentQtPath(os.path.join('/opt','Qt*'))
         if not p:
             # ...then try to find a binary SDK.
-            p = findMostRecentQtPath('/opt/qtsdk*')
+            p = findMostRecentQtPath(os.path.join('/opt','qtsdk*'))
             
     else:
         # Simple check for Windows: inspect only 'C:\Qt'
-        paths = glob.glob(os.path.join('C:', 'Qt', '*'))
+        paths = glob.glob(os.path.join('C:\\', 'Qt', 'Qt*'))
+        p = ""
         if len(paths):
             paths.sort()
-            # Is it a MinGW or VS installation?
-            p = findMostRecentQtPath(os.path.join(paths[-1], 'mingw*'))
-            if not p:
-                # No MinGW, so try VS...
-                p = findMostRecentQtPath(os.path.join(paths[-1], 'vs*'))
+            # Select version with highest release number
+            paths = glob.glob(os.path.join(paths[-1], '5*'))
+            if len(paths):
+                paths.sort()
+                # Is it a MinGW or VS installation?
+                p = findMostRecentQtPath(os.path.join(paths[-1], 'mingw*'))
+                if not p:
+                    # No MinGW, so try VS...
+                    p = findMostRecentQtPath(os.path.join(paths[-1], 'msvc*'))
         
     return os.environ.get("QT5DIR", p)
 
@@ -599,29 +606,30 @@ env = qtEnv.Clone()
     return True
 
 def writeSConsTestFile(dirpath, folder):
-    updirs = dirpath.count('/')+1
+    dirnums = dirpath.count(os.sep)+1
     f = open(os.path.join(dirpath, "sconstest-%s.py" % folder),'w')
     f.write("""
+import os
 import TestSCons
 
 test = TestSCons.TestSCons()
 test.dir_fixture("%s")
 test.file_fixture('%sqtenv.py')
-test.file_fixture('%s__init__.py','site_scons/site_tools/qt5/__init__.py')
+test.file_fixture('%s__init__.py', os.path.join('site_scons','site_tools','qt5','__init__.py'))
 test.run()
 
 test.pass_test()
-    """ % (folder, '../'*updirs, '../'*(updirs+1)))
+    """ % (folder, updir*dirnums, updir*(dirnums+1)))
     f.close()
 
 def installLocalFiles(dirpath):
-    updirs = dirpath.count('/')+1
-    shutil.copy(os.path.join(dirpath,'../'*updirs+'qtenv.py'),
+    dirnums = dirpath.count(os.sep)+1
+    shutil.copy(os.path.join(dirpath,updir*dirnums+'qtenv.py'),
                 os.path.join(dirpath,'qtenv.py'))
     toolpath = os.path.join(dirpath,'site_scons','site_tools','qt5')
     if not os.path.exists(toolpath):
         os.makedirs(toolpath)
-    shutil.copy(os.path.join(dirpath,'../'*(updirs+1)+'__init__.py'),
+    shutil.copy(os.path.join(dirpath,updir*(dirnums+1)+'__init__.py'),
                 os.path.join(dirpath,'site_scons','site_tools','qt5','__init__.py'))
     
 def isComplicated(keyvalues):
@@ -711,15 +719,18 @@ def main():
             print "No Qt installation found!"
             sys.exit(1)
 
-        options['pkgconfig'] = detectPkgconfigPath(qtpath)
-        if options['pkgconfig'] == "":
-            print "No pkgconfig files found!"
-            sys.exit(1)
+        is_win = sys.platform.startswith('win')
+        if not is_win:
+            # Use pkgconfig to detect the available modules
+            options['pkgconfig'] = detectPkgconfigPath(qtpath)
+            if options['pkgconfig'] == "":
+                print "No pkgconfig files found!"
+                sys.exit(1)
 
         options['qtpath'] = qtpath
         options['qtmodules'] = []
         for v in validModules:
-            if os.path.exists(os.path.join(options['pkgconfig'],v.replace('Qt','Qt5')+'.pc')):
+            if is_win or os.path.exists(os.path.join(options['pkgconfig'],v.replace('Qt','Qt5')+'.pc')):
                 options['qtmodules'].append(v)
 
     if not clean:
