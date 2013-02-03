@@ -40,7 +40,7 @@
 # Additional options for this script are:
 #
 #   -local               Creates the test files in the local directory,
-#                        also copies qtenv.py and qt4.py to their correct
+#                        also copies qtenv.py and qt5.py to their correct
 #                        places.
 #   -clean               Removes all intermediate test files.
 #
@@ -57,7 +57,7 @@ inc_re = re.compile(r'#include\s+<([^>]+)>')
 # regex for qtLibraryTarget function
 qtlib_re = re.compile(r'\$\$qtLibraryTarget\(([^\)]+)\)')
 # we currently skip all .pro files that use these config values
-complicated_configs = ['qdbus','phonon']
+complicated_configs = ['qdbus','phonon','plugin']
 # for the following CONFIG values we have to provide default qt modules
 config_modules = {'designer' : ['QtCore','QtGui','QtXml','QtScript','QtDesigner'],
                   'uitools' : ['QtCore','QtGui','QtUiTools'],
@@ -128,41 +128,57 @@ validModules = [
     'QtV8'
     ]
 
-def extendQtPath(qtpath):
-    if os.path.exists(os.path.join(qtpath,'qt','bin')):
-        # Looks like a binary install of the Qt5 SDK,
-        # so we add the 'qt' folder to the path...
-        return os.path.join(qtpath,'qt')
+def findQtBinParentPath(qtpath):
+    """ Within the given 'qtpath', search for a bin directory
+        containing the 'lupdate' executable and return
+        its parent path.
+    """
+    for path, dirs, files in os.walk(qtpath):
+        for d in dirs:
+            if d == 'bin':
+                if sys.platform.startswith("linux"):
+                    lpath = os.path.join(path, d, 'lupdate')
+                else:
+                    lpath = os.path.join(path, d, 'lupdate.exe')
+                if os.path.isfile(lpath):
+                    return path
+                
+    return ""
 
-    return qtpath
+def findMostRecentQtPath(dpath):
+    paths = glob.glob(dpath)
+    if len(paths):
+        paths.sort()
+        return findQtBinParentPath(paths[-1])
+        
+    return ""
 
 def detectLatestQtVersion():
     if sys.platform.startswith("linux"):
         # Inspect '/usr/local/Qt' first...
-        paths = glob.glob('/usr/local/Qt-*')
-        if len(paths):
-            paths.sort()
-            return extendQtPath(paths[-1])
-        # Inspect '/usr/local/Trolltech'...
-        paths = glob.glob('/usr/local/Trolltech/*')
-        if len(paths):
-            paths.sort()
-            return extendQtPath(paths[-1])
-        else:
+        p = findMostRecentQtPath('/usr/local/Qt-*')
+        if not p:
+            # ... then inspect '/usr/local/Trolltech'...
+            p = findMostRecentQtPath('/usr/local/Trolltech/*')
+        if not p:
+            # ...then try to find a binary install...
+            p = findMostRecentQtPath('/opt/Qt*')
+        if not p:
             # ...then try to find a binary SDK.
-            paths = glob.glob('/opt/qtsdk-*')
-            if len(paths):
-                paths.sort()
-                return extendQtPath(path[-1])
+            p = findMostRecentQtPath('/opt/qtsdk*')
             
     else:
         # Simple check for Windows: inspect only 'C:\Qt'
-        paths = glob.glob('C:\\Qt\\*')
+        paths = glob.glob(os.path.join('C:', 'Qt', '*'))
         if len(paths):
             paths.sort()
-            return paths[-1]
+            # Is it a MinGW or VS installation?
+            p = findMostRecentQtPath(os.path.join(paths[-1], 'mingw*'))
+            if not p:
+                # No MinGW, so try VS...
+                p = findMostRecentQtPath(os.path.join(paths[-1], 'vs*'))
         
-    return os.environ.get("QTDIR","")
+    return os.environ.get("QT5DIR", p)
 
 def detectPkgconfigPath(qtdir):
     pkgpath = os.path.join(qtdir, 'lib', 'pkgconfig')
@@ -174,17 +190,77 @@ def detectPkgconfigPath(qtdir):
 
     return ""
 
+re_localvar = re.compile("\\$\\$([^/]+)/")
+
+def expandProFile(fpath):
+    """ Read the given file into a list of single lines,
+        while expanding included files (mainly *.pri)
+        recursively.
+    """
+    lines = []
+    f = open(fpath,'r')
+    content = f.readlines()
+    f.close()
+    pwdhead, tail = os.path.split(fpath)
+    head = pwdhead
+    if pwdhead:
+        pwdhead = os.path.abspath(pwdhead)
+    else:
+        pwdhead = os.path.abspath(os.getcwd())
+    for idx, l in enumerate(content):
+        l = l.rstrip('\n')
+        l = l.rstrip()
+        if '$$PWD' in l:
+            l = l.replace("$$PWD", pwdhead)
+        if l.startswith('include('):
+            # Expand include file
+            l = l.rstrip(')')
+            l = l.replace('include(','')
+            while '$$' in l:
+                # Try to replace the used local variable by
+                # searching back in the content
+                m = re_localvar.search(l)
+                if m:
+                    key = m.group(1)
+                    tidx = idx-1
+                    skey = "%s = " % key
+                    while tidx >= 0:
+                        if content[tidx].startswith(skey):
+                            # Key found
+                            l = l.replace('$$%s' % key, content[tidx][len(skey):].rstrip('\n'))
+                            if os.path.join('..','..','qtbase','examples') in l:
+                                # Quick hack to cope with erroneous *.pro files
+                                l = l.replace(os.path.join('..','..','qtbase','examples'), os.path.join('..','examples'))
+                            break
+                        tidx -= 1
+                    if tidx < 0:
+                        print "Error: variable %s could not be found during parsing!" % key
+                        break
+            ipath = l
+            if head:
+                ipath = os.path.join(head, l)
+            # Does the file exist?
+            if not os.path.isfile(ipath):
+                # Then search for it the hard way
+                ihead, tail = os.path.split(ipath)
+                for spath, dirs, files in os.walk('.'):
+                    for f in files:
+                        if f == tail:
+                            ipath = os.path.join(spath, f)
+            lines.extend(expandProFile(ipath))
+        else:
+            lines.append(l)
+            
+    return lines
+
 def parseProFile(fpath):
     """ Parse the .pro file fpath and return the defined
     variables in a dictionary.
     """
     keys = {}
-    f = open(fpath,'r')
     curkey = None
     curlist = []
-    for l in f.readlines():
-        l = l.rstrip('\n')
-        l = l.rstrip()
+    for l in expandProFile(fpath):
         kl = l.split('=')
         if len(kl) > 1:
             # Close old key
@@ -194,8 +270,11 @@ def parseProFile(fpath):
                 else:
                     keys[curkey] = curlist
                 
+            # Split off trailing +
+            nkey = kl[0].rstrip('+')
+            nkey = nkey.rstrip()
             # Split off optional leading part with "contains():"
-            cl = kl[0].split(':')
+            cl = nkey.split(':')
             if (l.find('lesock') < 0) and ((len(cl) < 2) or (cl[0].find('msvc') < 0)):
                 nkey = cl[-1]
                 # Open new key
@@ -230,7 +309,6 @@ def parseProFile(fpath):
                     # ... and reset parse state.
                     curkey = None
                     curlist = []
-    f.close()
     
     return keys
 
@@ -331,6 +409,12 @@ def collectModules(dirpath, pkeys):
 
     return (unique_mods, unique_defines)
 
+def relOrAbsPath(dirpath, rpath):
+    if rpath.startswith('..'):
+        return os.path.abspath(os.path.normpath(os.path.join(dirpath, rpath)))
+
+    return rpath
+
 def writeSConscript(dirpath, profile, pkeys):
     """ Create a SConscript file in dirpath.
     """
@@ -339,6 +423,13 @@ def writeSConscript(dirpath, profile, pkeys):
     mods, defines = collectModules(dirpath, pkeys)
     if validKey('CONFIG', pkeys) and isComplicated(pkeys['CONFIG'][0]):
         return False
+    
+    if not validKey('SOURCES', pkeys):
+        # No SOURCES specified, try to find CPP files
+        if len(glob.glob(os.path.join(dirpath,'*.cpp'))) == 0:
+            # Nothing to build here
+            return False   
+    
     allmods = True
     for m in mods:
         if m not in pkeys['qtmodules']:
@@ -375,7 +466,23 @@ env = qtEnv.Clone()
             sc.write("'%s',\n" % d)
         sc.write("'%s'\n" % pkeys['LIBS'][-1])
         sc.write('])\n\n')
- 
+
+    # Collect INCLUDEPATHs
+    incpaths = []
+    if validKey('INCLUDEPATH', pkeys):
+        incpaths = pkeys['INCLUDEPATH']
+    if validKey('FORMS', pkeys):
+        for s in pkeys['FORMS']:
+            head, tail = os.path.split(s)
+            if head and head not in incpaths:
+                incpaths.append(head)
+    if incpaths:
+        sc.write('env.Append(CPPPATH=[\n')
+        for d in incpaths[:-1]:
+            sc.write("'%s',\n" % relOrAbsPath(dirpath, d))
+        sc.write("'%s'\n" % relOrAbsPath(dirpath, incpaths[-1]))
+        sc.write('])\n\n')
+  
     # Add special environment flags
     if len(qtenv_flags):
         for key, value in qtenv_flags.iteritems():    
@@ -386,16 +493,16 @@ env = qtEnv.Clone()
     if validKey('SOURCES', pkeys):
         sc.write('source_files = [\n')
         for s in pkeys['SOURCES'][:-1]:
-            sc.write("'%s',\n" % s)
-        sc.write("'%s'\n" % pkeys['SOURCES'][-1])
+            sc.write("'%s',\n" % relOrAbsPath(dirpath, s))
+        sc.write("'%s'\n" % relOrAbsPath(dirpath, pkeys['SOURCES'][-1]))
         sc.write(']\n\n')
     
     # Write .ui files
     if validKey('FORMS', pkeys):
         sc.write('ui_files = [\n')
         for s in pkeys['FORMS'][:-1]:
-            sc.write("'%s',\n" % s)
-        sc.write("'%s'\n" % pkeys['FORMS'][-1])
+            sc.write("'%s',\n" % relOrAbsPath(dirpath, s))
+        sc.write("'%s'\n" % relOrAbsPath(dirpath, pkeys['FORMS'][-1]))
         sc.write(']\n')
         sc.write('env.Uic5(ui_files)\n\n')
     
@@ -424,8 +531,6 @@ env = qtEnv.Clone()
         target = t.replace("$$TARGET", profile)
         
     # Create program/lib/dll
-    if validKey('SOURCES', pkeys):    
-        sc.write("env.%s('%s', source_files)\n\n" % (type, target))
     else:
         sc.write("env.%s('%s', Glob('*.cpp'))\n\n" % (type, target))
         
@@ -466,6 +571,9 @@ def isComplicated(keyvalues):
     
     return False
 
+# Folders that should get skipped while creating the SConscripts
+skip_folders = ['activeqt', 'declarative', 'dbus']
+
 def createSConsTest(dirpath, profile, options):
     """ Create files for the SCons test framework in dirpath.
     """
@@ -480,6 +588,9 @@ def createSConsTest(dirpath, profile, options):
     head, tail = os.path.split(dirpath)
     if head and tail:
         print os.path.join(dirpath, profile)
+        for s in skip_folders:
+            if s in dirpath:
+                return
         pkeys['qtmodules'] = options['qtmodules']
         if not writeSConscript(dirpath, profile[:-4], pkeys):
             return

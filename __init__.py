@@ -913,6 +913,7 @@ def enable_modules(self, modules, debug=False, crosscompiling=False) :
             self.AppendUnique(CPPPATH=[os.path.join("$QT5DIR","include","Qt5Assistant")])
             pcmodules.remove("Qt5Assistant")
             pcmodules.append("Qt5AssistantClient")
+        self.AppendUnique(RPATH=[os.path.join("$QT5DIR","lib")])
         self.ParseConfig('pkg-config %s --libs --cflags'% ' '.join(pcmodules))
         self["QT5_MOCCPPPATH"] = self["CPPPATH"]
         return
@@ -929,7 +930,7 @@ def enable_modules(self, modules, debug=False, crosscompiling=False) :
             modules.remove("QtAssistant")
             modules.append("QtAssistantClient")
         self.AppendUnique(LIBS=['qtmain'+debugSuffix])
-        self.AppendUnique(LIBS=[lib+debugSuffix+'5' for lib in modules if lib not in staticModules])
+        self.AppendUnique(LIBS=[lib.replace("Qt","Qt5")+debugSuffix for lib in modules if lib not in staticModules])
         self.PrependUnique(LIBS=[lib+debugSuffix for lib in modules if lib in staticModules])
         if 'QtOpenGL' in modules:
             self.AppendUnique(LIBS=['opengl32'])

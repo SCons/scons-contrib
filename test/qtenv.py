@@ -25,41 +25,57 @@
 import os, sys, glob
 from SCons import Environment
 
-def extendQtPath(qtpath):
-    if os.path.exists(os.path.join(qtpath,'qt','bin')):
-        # Looks like a binary install of the Qt5 SDK,
-        # so we add the 'qt' folder to the path...
-        return os.path.join(qtpath,'qt')
+def findQtBinParentPath(qtpath):
+    """ Within the given 'qtpath', search for a bin directory
+        containing the 'lupdate' executable and return
+        its parent path.
+    """
+    for path, dirs, files in os.walk(qtpath):
+        for d in dirs:
+            if d == 'bin':
+                if sys.platform.startswith("linux"):
+                    lpath = os.path.join(path, d, 'lupdate')
+                else:
+                    lpath = os.path.join(path, d, 'lupdate.exe')
+                if os.path.isfile(lpath):
+                    return path
+                
+    return ""
 
-    return qtpath
+def findMostRecentQtPath(dpath):
+    paths = glob.glob(dpath)
+    if len(paths):
+        paths.sort()
+        return findQtBinParentPath(paths[-1])
+        
+    return ""
 
 def detectLatestQtVersion():
     if sys.platform.startswith("linux"):
         # Inspect '/usr/local/Qt' first...
-        paths = glob.glob('/usr/local/Qt-*')
-        if len(paths):
-            paths.sort()
-            return extendQtPath(paths[-1])
-        # Inspect '/usr/local/Trolltech'...
-        paths = glob.glob('/usr/local/Trolltech/*')
-        if len(paths):
-            paths.sort()
-            return extendQtPath(paths[-1])
-        else:
+        p = findMostRecentQtPath('/usr/local/Qt-*')
+        if not p:
+            # ... then inspect '/usr/local/Trolltech'...
+            p = findMostRecentQtPath('/usr/local/Trolltech/*')
+        if not p:
+            # ...then try to find a binary install...
+            p = findMostRecentQtPath('/opt/Qt*')
+        if not p:
             # ...then try to find a binary SDK.
-            paths = glob.glob('/opt/qtsdk-*')
-            if len(paths):
-                paths.sort()
-                return extendQtPath(path[-1])
+            p = findMostRecentQtPath('/opt/qtsdk*')
             
     else:
         # Simple check for Windows: inspect only 'C:\Qt'
-        paths = glob.glob('C:\\Qt\\*')
+        paths = glob.glob(os.path.join('C:', 'Qt', '*'))
         if len(paths):
             paths.sort()
-            return paths[-1]
+            # Is it a MinGW or VS installation?
+            p = findMostRecentQtPath(os.path.join(paths[-1], 'mingw*'))
+            if not p:
+                # No MinGW, so try VS...
+                p = findMostRecentQtPath(os.path.join(paths[-1], 'vs*'))
         
-    return os.environ.get("QTDIR","")
+    return os.environ.get("QT5DIR", p)
 
 def detectPkgconfigPath(qtdir):
     pkgpath = os.path.join(qtdir, 'lib', 'pkgconfig')
