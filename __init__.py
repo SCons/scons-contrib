@@ -80,6 +80,8 @@ except NameError:
 
 qrcinclude_re = re.compile(r'<file[^>]*>([^<]*)</file>', re.M)
 
+mocver_re = re.compile(r'.*(\d+)\.(\d+)\.(\d+).*')
+
 def transformToWinePath(path) :
     return os.popen('winepath -w "%s"'%path).read().strip().replace('\\','/')
 
@@ -374,7 +376,6 @@ AutomocStatic = _Automoc('StaticObject')
 
 def _detect(env):
     """Not really safe, but fast method to detect the Qt5 library"""
-    # TODO: check output of "moc -v" for correct version >= 5.0.0
     try: return env['QT5DIR']
     except KeyError: pass
 
@@ -389,6 +390,17 @@ def _detect(env):
 
     moc = env.WhereIs('moc-qt5') or env.WhereIs('moc5') or env.WhereIs('moc')
     if moc:
+        vernumber = os.popen3('%s -v' % moc)[2].read()
+        vernumber = mocver_re.match(vernumber)
+        if vernumber:
+            vernumber = [ int(x) for x in vernumber.groups() ]
+            if vernumber < [5, 0, 0]:
+                vernumber = '.'.join([str(x) for x in vernumber])
+                moc = None
+                SCons.Warnings.warn(
+                    QtdirNotFound,
+                    "QT5DIR variable not defined, and detected moc is for Qt %s" % vernumber)
+
         QT5DIR = os.path.dirname(os.path.dirname(moc))
         SCons.Warnings.warn(
             QtdirNotFound,
