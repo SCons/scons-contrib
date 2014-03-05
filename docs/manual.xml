@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
-  Copyright (c) 2001-2010,2011,2012 The SCons Foundation
+  Copyright (c) 2001-2010,2011,2012,2013 The SCons Foundation
 
   Permission is hereby granted, free of charge, to any person obtaining
   a copy of this software and associated documentation files (the
@@ -66,7 +66,7 @@
 
       <itemizedlist>
         <listitem>
-          <para>the SCons User's Guide, chap. 17.7 "Where to put your custom
+          <para>the SCons User's Guide, sect. "Where to put your custom
           Builders and Tools" and</para>
         </listitem>
 
