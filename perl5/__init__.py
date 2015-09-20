@@ -27,26 +27,39 @@ import distutils.spawn
 
 import SCons.Script
 
-SCANDEPS_BIN = ""
-
 def perl5_scanner(node, env, path):
   perl_inc = ["-I" + inc for inc in env['PERL5LIB']]
   perl_args = ["perl", "-MModule::ScanDeps"] + perl_inc
-  code = """
-    $deps = scan_deps (files => ['%s'],
-                       recurse => 0);
-    foreach (keys %%{$deps})
-      { print $deps->{$_}->{file} . "\\n"; }
-  """ % str(node)
-  deps = subprocess.check_output(perl_args + ["-e", code], env=env['ENV'])
 
-  our_deps = []
+  ## We handle the recursion ourselves instead of using the recursion
+  ## option from Module::ScanDeps, because that will descend deep into
+  ## the whole system libraries and our dependencies (from the project),
+  ## are likely to be much smaller.
+  our_deps = set()
   cwd = os.path.realpath(os.getcwd())
-  for dep in deps.splitlines():
-    dep = os.path.realpath(dep)
-    if dep.startswith(cwd):
-      our_deps.append(dep)
-  return env.File(our_deps)
+  def scan_deps(fpaths):
+    my_deps = set()
+    for fpath in fpaths:
+      code = """
+        $deps = scan_deps (files => ['%s'],
+                           recurse => 0);
+        foreach (keys %%{$deps})
+          { print $deps->{$_}->{file} . "\\n"; }
+      """ % str(fpath)
+      deps = subprocess.check_output(perl_args + ["-e", code], env=env['ENV'])
+      for dep in deps.splitlines():
+        dep = os.path.realpath(dep)
+        if dep.startswith(cwd) and dep not in our_deps:
+          my_deps.add(dep)
+
+    old_len = len(our_deps)
+    my_deps.difference_update(our_deps)
+    our_deps.update(my_deps)
+    if len(our_deps) != old_len:
+      scan_deps(my_deps)
+
+  scan_deps([node])
+  return env.File(list(our_deps))
 
 ## This is currently unused because there's no way to share configure tests.
 def CheckPerlModule(context, module_name):
