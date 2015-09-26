@@ -61,6 +61,11 @@ def perl5_scanner(node, env, path):
   scan_deps([node])
   return env.File(list(our_deps))
 
+
+def generate_redirect_stdout(source, target, env, for_signature):
+  perl_inc = ["-I" + inc for inc in env['PERL5LIB']]
+  return 'perl5 %s %s > %s' % (" ".join(perl_inc), target[0], source[0])
+
 ## This is currently unused because there's no way to share configure tests.
 def CheckPerlModule(context, module_name):
   context.Message("Checking for perl module %s..." % module_name)
@@ -79,6 +84,9 @@ def generate(env):
 
   scanner = SCons.Script.Scanner(perl5_scanner, skeys=['.pl', '.pm'])
   env.Append(SCANNERS=scanner)
+
+  bld_perl5_output = SCons.Script.Builder(generator=generate_redirect_stdout)
+  env.Append(BUILDERS={'Perl5Output' : bld_perl5_output})
 
 def exists(env):
   if not distutils.spawn.find_executable("perl"):
