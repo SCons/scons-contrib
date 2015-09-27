@@ -76,9 +76,11 @@ def CheckPerlModule(context, module_name):
 
 def generate(env):
   vars = SCons.Script.Variables()
-  vars.Add('PERL5LIB', ("List of directories in which to look for Perl"
-                         + " library files before looking in the standard"
-                         + " library and the current directory."))
+  vars.Add('PERL5LIB', """
+List of directories in which to look for Perl library files before
+looking in the standard library and the current directory.  It is
+akin to the environment variable of the same name.
+""")
   vars.Update(env)
   SCons.Script.Help(vars.GenerateHelpText(env))
 
