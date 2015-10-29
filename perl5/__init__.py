@@ -40,10 +40,13 @@ def perl5_scanner(node, env, path):
   def scan_deps(fpaths):
     my_deps = set()
     for fpath in fpaths:
+      ## note that perl sorts the keys because the order matters (it will
+      ## rebuild the target even if only the order changed), and the order
+      ## of keys in a hash is random.
       code = """
         $deps = scan_deps (files => ['%s'],
                            recurse => 0);
-        foreach (keys %%{$deps})
+        foreach (sort keys %%{$deps})
           { print $deps->{$_}->{file} . "\\n"; }
       """ % str(fpath)
       deps = subprocess.check_output(perl_args + ["-e", code], env=env['ENV'])
@@ -64,7 +67,7 @@ def perl5_scanner(node, env, path):
 
 def generate_redirect_stdout(source, target, env, for_signature):
   perl_inc = ["-I" + inc for inc in env['PERL5LIB']]
-  return 'perl5 %s %s > %s' % (" ".join(perl_inc), target[0], source[0])
+  return 'perl %s -e %s > %s' % (" ".join(perl_inc), env['PERLMETHOD'], target[0])
 
 ## This is currently unused because there's no way to share configure tests.
 def CheckPerlModule(context, module_name):
