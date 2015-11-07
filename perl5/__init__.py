@@ -31,7 +31,24 @@ import SCons.Errors
 def get_perl_I(env):
   return ["-I" + inc for inc in env['PERL5LIB']]
 
-def create_args_perl5_output_to_target(env):
+
+def create_args_perl5_command(source, env):
+  return ['perl'] + get_perl_I(env) + [str(source[0])] + env['action']
+
+def perl5_command_strfunc(target, source, env):
+  args = create_args_perl5_command(source, env)
+  cmd = "$ %s " % (args[0])
+  cmd += " ".join(["'%s'" % (arg) for arg in args[1:]])
+  return cmd
+
+def perl5_command(target, source, env):
+  """The actual PerlCommand Builder action.
+  """
+  args = create_args_perl5_command(source, env)
+  return subprocess.call(args)
+
+
+def create_args_perl5_output(env):
   """Create list of arguments for the perl command.
 
   Kinda silly that we need to do this twice, once to generate the
@@ -46,19 +63,20 @@ def create_args_perl5_output_to_target(env):
 def perl5_output_strfunc(target, source, env):
   """ Create string to be displayed for the builder.
   """
-  args = create_args_perl5_output_to_target(env)
+  args = create_args_perl5_output(env)
   cmd = "$ %s " % (args[0])
   cmd += " ".join(["'%s'" % (arg) for arg in args[1:]])
   cmd += " > " + str(target[0])
   return cmd
 
-def perl5_output_to_target(target, source, env):
-  """The actual Builder action.
+def perl5_output(target, source, env):
+  """The actual PerlOutput Builder action.
   """
   args = create_args_perl5_output_to_target(env)
   with open(str(target[0]), "w") as target_file:
     rv = subprocess.call(args, stdout=target_file)
   return rv
+
 
 def perl5_scanner(node, env, path):
   perl_args = ["perl", "-MModule::ScanDeps"] + get_perl_I(env)
@@ -104,6 +122,7 @@ def CheckPerlModule(context, module_name):
   context.Result(is_ok)
   return is_ok
 
+
 def generate(env):
   vars = SCons.Script.Variables()
   vars.Add('PERL5LIB', """
@@ -117,10 +136,16 @@ akin to the environment variable of the same name.
   scanner = SCons.Script.Scanner(perl5_scanner, skeys=['.pl', '.pm'])
   env.Append(SCANNERS=scanner)
 
-  perl5_output_action = SCons.Script.Action(perl5_output_to_target,
+  perl5_output_action = SCons.Script.Action(perl5_output,
                                             strfunction=perl5_output_strfunc)
   bld_perl5_output = SCons.Script.Builder(action=perl5_output_action)
   env.Append(BUILDERS={'PerlOutput' : bld_perl5_output})
+
+  perl5_cmd_action = SCons.Script.Action(perl5_command,
+                                         strfunction=perl5_command_strfunc)
+  bld_perl5_cmd = SCons.Script.Builder(action=perl5_cmd_action)
+  env.Append(BUILDERS={'PerlCommand' : bld_perl5_cmd})
+
 
 def exists(env):
   if not distutils.spawn.find_executable("perl"):
