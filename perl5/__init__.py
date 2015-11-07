@@ -72,7 +72,7 @@ def perl5_output_strfunc(target, source, env):
 def perl5_output(target, source, env):
   """The actual PerlOutput Builder action.
   """
-  args = create_args_perl5_output_to_target(env)
+  args = create_args_perl5_output(env)
   with open(str(target[0]), "w") as target_file:
     rv = subprocess.call(args, stdout=target_file)
   return rv
