@@ -26,10 +26,42 @@ import subprocess
 import distutils.spawn
 
 import SCons.Script
+import SCons.Errors
+
+def get_perl_I(env):
+  return ["-I" + inc for inc in env['PERL5LIB']]
+
+def create_args_perl5_output_to_target(env):
+  """Create list of arguments for the perl command.
+
+  Kinda silly that we need to do this twice, once to generate the
+  arguments for subprocess, and another for the displayed string.
+  """
+  args = ['perl'] + get_perl_I(env)
+  if env.has_key('M'):
+    args += ["-M" + m for m in env['M']]
+  args += ["-e", env.get('eval')]
+  return args
+
+def perl5_output_strfunc(target, source, env):
+  """ Create string to be displayed for the builder.
+  """
+  args = create_args_perl5_output_to_target(env)
+  cmd = "$ %s " % (args[0])
+  cmd += " ".join(["'%s'" % (arg) for arg in args[1:]])
+  cmd += " > " + str(target[0])
+  return cmd
+
+def perl5_output_to_target(target, source, env):
+  """The actual Builder action.
+  """
+  args = create_args_perl5_output_to_target(env)
+  with open(str(target[0]), "w") as target_file:
+    rv = subprocess.call(args, stdout=target_file)
+  return rv
 
 def perl5_scanner(node, env, path):
-  perl_inc = ["-I" + inc for inc in env['PERL5LIB']]
-  perl_args = ["perl", "-MModule::ScanDeps"] + perl_inc
+  perl_args = ["perl", "-MModule::ScanDeps"] + get_perl_I(env)
 
   ## We handle the recursion ourselves instead of using the recursion
   ## option from Module::ScanDeps, because that will descend deep into
@@ -64,11 +96,6 @@ def perl5_scanner(node, env, path):
   scan_deps([node])
   return env.File(list(our_deps))
 
-
-def generate_redirect_stdout(source, target, env, for_signature):
-  perl_inc = ["-I" + inc for inc in env['PERL5LIB']]
-  return 'perl %s -e %s > %s' % (" ".join(perl_inc), env['PERLMETHOD'], target[0])
-
 ## This is currently unused because there's no way to share configure tests.
 def CheckPerlModule(context, module_name):
   context.Message("Checking for perl module %s..." % module_name)
@@ -90,8 +117,10 @@ akin to the environment variable of the same name.
   scanner = SCons.Script.Scanner(perl5_scanner, skeys=['.pl', '.pm'])
   env.Append(SCANNERS=scanner)
 
-  bld_perl5_output = SCons.Script.Builder(generator=generate_redirect_stdout)
-  env.Append(BUILDERS={'Perl5Output' : bld_perl5_output})
+  perl5_output_action = SCons.Script.Action(perl5_output_to_target,
+                                            strfunction=perl5_output_strfunc)
+  bld_perl5_output = SCons.Script.Builder(action=perl5_output_action)
+  env.Append(BUILDERS={'PerlOutput' : bld_perl5_output})
 
 def exists(env):
   if not distutils.spawn.find_executable("perl"):
