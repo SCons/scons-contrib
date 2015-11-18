@@ -32,21 +32,51 @@ def get_perl_I(env):
   return ["-I" + inc for inc in env['PERL5LIB']]
 
 
-def create_args_perl5_command(source, env):
+##
+## PerlScript
+##
+
+def create_args_perl5_script(source, env):
   return ['perl'] + get_perl_I(env) + [str(source[0])] + env['action']
 
-def perl5_command_strfunc(target, source, env):
-  args = create_args_perl5_command(source, env)
+def perl5_script_strfunc(target, source, env):
+  args = create_args_perl5_script(source, env)
   cmd = "$ %s " % (args[0])
   cmd += " ".join(["'%s'" % (arg) for arg in args[1:]])
   return cmd
 
-def perl5_command(target, source, env):
-  """The actual PerlCommand Builder action.
+def perl5_script(target, source, env):
+  """The actual PerlScript Builder action.
   """
-  args = create_args_perl5_command(source, env)
+  args = create_args_perl5_script(source, env)
   return subprocess.call(args)
 
+
+##
+## PerlSub
+##
+
+def create_args_perl5_sub(source, env):
+  f_name = os.path.basename(str(source[0]))
+  m_name = os.path.splitext(f_name)[0]
+  return ['perl'] + get_perl_I(env) + ["-M"+m_name, "-e", env.get('action')]
+
+def perl5_sub_strfunc(target, source, env):
+  args = create_args_perl5_sub(source, env)
+  cmd = "$ %s " % (args[0])
+  cmd += " ".join(["'%s'" % (arg) for arg in args[1:]])
+  return cmd
+
+def perl5_sub(target, source, env):
+  """The actual PerlSub Builder action.
+  """
+  args = create_args_perl5_sub(source, env)
+  return subprocess.call(args)
+
+
+##
+## PerlOutput
+##
 
 def create_args_perl5_output(env):
   """Create list of arguments for the perl command.
@@ -77,6 +107,10 @@ def perl5_output(target, source, env):
     rv = subprocess.call(args, stdout=target_file)
   return rv
 
+
+##
+## Scanner
+##
 
 def perl5_scanner(node, env, path):
   perl_args = ["perl", "-MModule::ScanDeps"] + get_perl_I(env)
@@ -114,6 +148,11 @@ def perl5_scanner(node, env, path):
   scan_deps([node])
   return env.File(list(our_deps))
 
+
+##
+## Configure checks
+##
+
 ## This is currently unused because there's no way to share configure tests.
 def CheckPerlModule(context, module_name):
   context.Message("Checking for perl module %s..." % module_name)
@@ -121,6 +160,7 @@ def CheckPerlModule(context, module_name):
                                stdout = open(os.devnull, "wb"))
   context.Result(is_ok)
   return is_ok
+
 
 
 def generate(env):
@@ -141,11 +181,15 @@ akin to the environment variable of the same name.
   bld_perl5_output = SCons.Script.Builder(action=perl5_output_action)
   env.Append(BUILDERS={'PerlOutput' : bld_perl5_output})
 
-  perl5_cmd_action = SCons.Script.Action(perl5_command,
-                                         strfunction=perl5_command_strfunc)
-  bld_perl5_cmd = SCons.Script.Builder(action=perl5_cmd_action)
-  env.Append(BUILDERS={'PerlCommand' : bld_perl5_cmd})
+  perl5_script_action = SCons.Script.Action(perl5_script,
+                                            strfunction=perl5_script_strfunc)
+  bld_perl5_script = SCons.Script.Builder(action=perl5_script_action)
+  env.Append(BUILDERS={'PerlScript' : bld_perl5_script})
 
+  perl5_sub_action = SCons.Script.Action(perl5_sub,
+                                         strfunction=perl5_sub_strfunc)
+  bld_perl5_sub = SCons.Script.Builder(action=perl5_sub_action)
+  env.Append(BUILDERS={'PerlSub' : bld_perl5_sub})
 
 def exists(env):
   if not distutils.spawn.find_executable("perl"):
