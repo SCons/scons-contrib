@@ -78,7 +78,7 @@ def perl5_sub(target, source, env):
 ## PerlOutput
 ##
 
-def create_args_perl5_output(env):
+def create_args_perl5_output(env, source):
   """Create list of arguments for the perl command.
 
   Kinda silly that we need to do this twice, once to generate the
@@ -87,13 +87,18 @@ def create_args_perl5_output(env):
   args = ['perl'] + get_perl_I(env)
   if env.has_key('M'):
     args += ["-M" + m for m in env['M']]
-  args += ["-e", env.get('eval')]
+  if env.has_key('eval'):
+    args += ["-e", env.get('eval')]
+  else:
+    args += [str(source[0])]
+    if env.has_key('args'):
+      args += env.get('args')
   return args
 
 def perl5_output_strfunc(target, source, env):
   """ Create string to be displayed for the builder.
   """
-  args = create_args_perl5_output(env)
+  args = create_args_perl5_output(env, source)
   cmd = "$ %s " % (args[0])
   cmd += " ".join(["'%s'" % (arg) for arg in args[1:]])
   cmd += " > " + str(target[0])
@@ -102,10 +107,11 @@ def perl5_output_strfunc(target, source, env):
 def perl5_output(target, source, env):
   """The actual PerlOutput Builder action.
   """
-  args = create_args_perl5_output(env)
+  args = create_args_perl5_output(env, source)
   with open(str(target[0]), "w") as target_file:
     rv = subprocess.call(args, stdout=target_file)
   return rv
+
 
 
 ##
