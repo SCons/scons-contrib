@@ -37,7 +37,9 @@ def get_perl_I(env):
 ##
 
 def create_args_perl5_script(source, env):
-  return ['perl'] + get_perl_I(env) + [str(source[0])] + env['action']
+  return (['perl'] + get_perl_I(env)
+          + [str(source[0])]
+          + [str(a) for a in env['action']])
 
 def perl5_script_strfunc(target, source, env):
   args = create_args_perl5_script(source, env)
@@ -92,7 +94,7 @@ def create_args_perl5_output(env, source):
   else:
     args += [str(source[0])]
     if env.has_key('args'):
-      args += env.get('args')
+      args += [str(a) for a in env.get('args')]
   return args
 
 def perl5_output_strfunc(target, source, env):
