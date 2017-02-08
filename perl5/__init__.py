@@ -29,7 +29,7 @@ import SCons.Script
 import SCons.Errors
 
 def get_perl_I(env):
-  return ["-I" + inc for inc in env['PERL5LIB']]
+  return ["-I" + str(inc) for inc in env['PERL5LIB']]
 
 
 ##
