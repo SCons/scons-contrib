@@ -1,8 +1,10 @@
 SCons - a software construction tool contrib repo
 #################################################
 
+
 Basics
 ======
+
 
 Welcome to the SCons contrib repo.  The real purpose of this tree is to
 provide a place for contributed builders and other useful logic.
@@ -43,4 +45,3 @@ TODOs and known problems
 ========================
 
 * Implement more commands/builders/tools.
-
