@@ -26,7 +26,7 @@
 """
 Test Qt with a copied construction environment.
 """
-
+from __future__ import print_function
 import TestSCons
 
 test = TestSCons.TestSCons()
@@ -39,8 +39,8 @@ cpp_MyFile = [x for x in test.stdout().split('\n') if x.find('MyFile.cpp') != -1
 
 for x in cpp_MyFile:
 	if ((x.find('MYLIB_IMPL') < 0) or (x.find('FOOBAZ') < 0)):
-	    print "Did not find MYLIB_IMPL and FOOBAZ on MyFile.cpp compilation line:"
-	    print test.stdout()
+	    print("Did not find MYLIB_IMPL and FOOBAZ on MyFile.cpp compilation line:")
+	    print(test.stdout())
 	    test.fail_test()
 
 test.pass_test()
