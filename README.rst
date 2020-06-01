@@ -1,3 +1,6 @@
+For now do not install using pip or setup.py as those need some maintenence and won't work.
+###########################################################################################
+
 SCons - a software construction tool contrib repo
 #################################################
 
