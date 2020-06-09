@@ -1,5 +1,10 @@
+import os
+
 env = Environment()
 
-env.Install('/home/dirk/.scons/site_scons/site_tools/jal','__init__.py')
+db_site = os.path.join(os.path.expanduser('~'),'.scons','site_scons','site_tools','jal')
 
-env.Alias('install','/home/dirk/.scons/site_scons/site_tools/jal')
+env.Install(db_site, '__init__.py')
+
+env.Alias('install', db_site)
+
