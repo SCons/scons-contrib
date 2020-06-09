@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+  Copyright (c) 2001-2010 The SCons Foundation
+
+  Permission is hereby granted, free of charge, to any person obtaining
+  a copy of this software and associated documentation files (the
+  "Software"), to deal in the Software without restriction, including
+  without limitation the rights to use, copy, modify, merge, publish,
+  distribute, sublicense, and/or sell copies of the Software, and to
+  permit persons to whom the Software is furnished to do so, subject to
+  the following conditions:
+
+  The above copyright notice and this permission notice shall be included
+  in all copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY
+  KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+  WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+  LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+  OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+-->
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd">
+<article>
+  <title>The SCons reST tool</title>
+  <articleinfo>
+    <author>
+      <surname>Dirk Baechle</surname>
+    </author>
+    <pubdate>2012-04-25</pubdate>
+  </articleinfo>
+<section id="basics"><title>Basics</title>
+<para>This tool tries to make working with docutils in SCons a little easier.
+It provides several toolchains for creating different output formats,
+like HTML or LaTeX, from a reST (reStructuredText) input file.
+</para>
+<section id="install"><title>Install</title>
+<para>Installing it, requires you to copy (or, even better: checkout) the contents of the
+package's <literal>rest</literal> folder to
+</para>
+<orderedlist><listitem><para><quote><literal>/path_to_your_project/site_scons/site_tools/rest</literal></quote>, if you need the reST Tool in one project only, or
+</para>
+</listitem>
+<listitem><para><quote><literal>~/.scons/site_scons/site_tools/rest</literal></quote>, for a system-wide installation under your current login.
+</para>
+</listitem>
+</orderedlist>
+<para>For more infos about this, please refer to 
+</para>
+<itemizedlist><listitem><para>the SCons User's Guide, chap. 19.7 "Where to put your custom Builders and Tools" and
+</para>
+</listitem>
+<listitem><para>the SCons Tools Wiki page at <ulink url="http://scons.org/wiki/ToolsIndex">http://scons.org/wiki/ToolsIndex</ulink>.
+</para>
+</listitem>
+</itemizedlist>
+</section>
+<section id="activation"><title>How to activate</title>
+<para>For activating the tool "rest", you have to add its name to the Environment constructor,
+like this
+</para>
+<screen>env = Environment(tools=['rest'])
+</screen>
+<para>On its startup, the reST tool tries to find an installed version of the <literal>docutils</literal> package by
+looking for the command-line tool <literal>rst2html</literal>. So make sure that it is added to your system's environment
+<literal>PATH</literal> and can be called directly, without specifying its full path.
+</para>
+</section>
+<section id="requirements"><title>Requirements</title>
+<para>For the most basic processing of reST to HTML/LaTeX/ODT, you need to have installed
+</para>
+<itemizedlist><listitem><para>the Python <literal>docutils</literal> package, and optionally
+</para>
+</listitem>
+<listitem><para>the <literal>pygment</literal> module for syntax highlighting in code blocks.
+</para>
+</listitem>
+</itemizedlist>
+</section>
+</section>
+<section id="process"><title>Processing documents</title>
+<para>Creating a HTML or LaTeX document is very simple and straightforward. Say
+</para>
+<screen>env = Environment(tools=['rest'])
+env.Rst2Html('manual.html', 'manual.rst')
+env.Rst2Latex('manual.ltx', 'manual.rst')
+</screen>
+<para>to get both outputs from your source file <literal>manual.rst</literal>. As a shortcut, you can
+give the stem of the filenames alone, like this:
+</para>
+<screen>env = Environment(tools=['rest'])
+env.Rst2Html('manual')
+env.Rst2Latex('manual')
+</screen>
+<para>and get the same result. Target and source lists are also supported:
+</para>
+<screen>env = Environment(tools=['rest'])
+env.Rst2Html(['manual.html','reference.html'], ['manual.rst','reference.rst'])
+</screen>
+<para>or even
+</para>
+<screen>env = Environment(tools=['rest'])
+env.Rst2Html(['manual','reference'])
+</screen>
+<important><para>Whenever you leave out the list of sources, you may not specify a file extension! The
+Tool uses the given names as file stems, and adds the suffixes for target and source files
+accordingly.
+</para>
+</important>
+<para>The rules given above are valid for all the Builders <literal>Rst2Html</literal>, <literal>Rst2Latex</literal> 
+and <literal>Rst2Odt</literal>. 
+</para>
+</section>
+<section id="builders"><title>All builders</title>
+<para>A simple list of all builders currently available:
+</para>
+<variablelist><varlistentry><term>Rst2Html
+</term>
+<listitem><para>Single HTML file.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry><term>Rst2Latex
+</term>
+<listitem><para>Outputs a LaTeX file.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry><term>Rst2Odt
+</term>
+<listitem><para>OpenOffice output.
+</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</section>
+<section id="more"><title>Need more?</title>
+<para>This work is still in a very basic state and hasn't been tested well
+with things like variant dirs, yet. 
+There will definitely arise the need for
+adding features, or a variable. Let us know if you can think of a nice
+improvement or have worked on a bugfix/patch with success. Enter your issues at the
+Bitbucket bug tracker for the ReST Tool, or write to the User General Discussion
+list of SCons at <literal>users@scons.tigris.org</literal>.
+</para>
+</section>
+
+</article>

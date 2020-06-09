@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd">
+<article>
+  <title>CPython, a binary builder for Python installs</title>
+  <articleinfo>
+    <author>
+      <surname>Dirk Baechle</surname>
+    </author>
+  </articleinfo>
+<para>This first version of a Python Binary Builder is based on the work of
+<ulink url="http://www.scons.org/wiki/GSoC2008/MatiGruca">Mati Gruca's Google Summer of Code 2008 project</ulink>
+(<ulink url="http://scons.tigris.org/source/browse/scons/branches/py-builder/">last SVN branch</ulink>).
+</para>
+<para>The <quote><literal>InstallPython</literal></quote> method creates <literal>.pyc</literal> or <literal>.pyo</literal> files for <literal>.py</literal> source files
+and adds them to the list of targets along with the source files.
+They are later copied to the destination (target) directory.
+</para>
+<para>The <quote><literal>InstallPython</literal></quote> Builder takes a target (destination) directory as its first
+argument and a list of source files/directories as a second argument.
+It returns the list of target files to copy to the
+target directory.
+</para>
+<section id="examples"><title>Examples</title>
+<para>A simple example of an <quote><literal>SConstruct</literal></quote> file:
+</para>
+<screen>env = Environment()
+hello = File('hello.py')
+env.InstallPython('/usr/local/bin/', hello)
+env.Alias('install', '/usr/local/bin/')
+</screen>
+<para><quote><literal>SCons</literal></quote> invoked with the <quote><literal>-Q install</literal></quote> parameter will compile the <quote><literal>hello.py</literal></quote> file into
+<quote><literal>hello.pyc</literal></quote>, and copy both files into <quote><literal>/usr/local/bin/</literal></quote> directory.
+</para>
+<para>Sample output:
+</para>
+<screen>$ scons -Q install
+Install file: "hello.py" as "/usr/local/bin/hello.py"
+Install file: "hello.pyc" as "/usr/local/bin/hello.pyc"
+</screen>
+<para><quote><literal>InstallPython</literal></quote> can also compile Python source files into optimized
+binary files (<quote><literal>.pyo</literal></quote> suffix) instead of ordinary binaries (<quote><literal>.pyc</literal></quote> files). To
+achieve this, change the call to <quote><literal>Environment()</literal></quote> and set the <quote><literal>CPYTHON_PYC</literal></quote>
+variable to '<literal>0</literal>' (zero):
+</para>
+<screen>env = Environment(CPYTHON_PYC=0)
+hello = File('hello.py')
+env.InstallPython('/usr/local/bin/', hello)
+env.Alias('install', '/usr/local/bin/')
+</screen>
+<para>Sample output:
+</para>
+<screen>$ scons -Q install
+Install file: "hello.py" as "/usr/local/bin/hello.py"
+Install file: "hello.pyo" as "/usr/local/bin/hello.pyo"
+</screen>
+<para>The <quote><literal>InstallPython</literal></quote> method accepts both, files and directories, as its source arguments:
+</para>
+<screen>env = Environment()
+pyfiles = Dir('pyfiles/')
+env.InstallPython('/usr/local/bin/', pyfiles)
+env.Alias('install', '/usr/local/bin')
+</screen>
+<para>Running <quote><literal>scons -Q install</literal></quote> will copy all the <quote><literal>.py</literal></quote> files from <quote><literal>pyfiles</literal></quote> directory
+into <quote><literal>/usr/local/bin/pyfiles</literal></quote> directory along with corresponding <quote><literal>.pyc</literal></quote> files.
+</para>
+<para>Sample output:
+</para>
+<screen>$ scons -Q install
+Install file: "pyfiles/hello.py" as "/usr/local/bin/pyfiles/hello.py"
+Install file: "pyfiles/hello.pyc" as "/usr/local/bin/pyfiles/hello.pyc"
+Install file: "pyfiles/hello2.py" as "/usr/local/bin/pyfiles/hello2.py"
+Install file: "pyfiles/hello2.pyc" as "/usr/local/bin/pyfiles/hello2.pyc"
+</screen>
+<para>Mixing files and directories is also possible:
+</para>
+<screen>env = Environment()
+hello = File('hello.py')
+pyfiles = Dir('pyfiles/')
+env.InstallPython('/usr/local/bin/', [hello, pyfiles])
+env.Alias('install', '/usr/local/bin')
+</screen>
+<para>Sample output:
+</para>
+<screen>$ scons -Q install
+Install file: "hello.py" as "/usr/local/bin/hello.py"
+Install file: "hello.pyc" as "/usr/local/bin/hello.pyc"
+Install file: "pyfiles/hello.py" as "/usr/local/bin/pyfiles/hello.py"
+Install file: "pyfiles/hello.pyc" as "/usr/local/bin/pyfiles/hello.pyc"
+Install file: "pyfiles/hello2.py" as "/usr/local/bin/pyfiles/hello2.py"
+Install file: "pyfiles/hello2.pyc" as "/usr/local/bin/pyfiles/hello2.pyc"
+</screen>
+</section>
+
+</article>
