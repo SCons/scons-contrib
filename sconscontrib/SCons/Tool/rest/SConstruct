@@ -1,0 +1,10 @@
+import os
+
+env = Environment()
+
+db_site = os.path.join(os.path.expanduser('~'),'.scons','site_scons','site_tools','rest')
+
+env.Install(db_site, '__init__.py')
+
+env.Alias('install', db_site)
+

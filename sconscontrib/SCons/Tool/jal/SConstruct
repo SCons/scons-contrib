@@ -1,0 +1,5 @@
+env = Environment()
+
+env.Install('/home/dirk/.scons/site_scons/site_tools/jal','__init__.py')
+
+env.Alias('install','/home/dirk/.scons/site_scons/site_tools/jal')

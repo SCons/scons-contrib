@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+  Copyright (c) 2001-2010 The SCons Foundation
+
+  Permission is hereby granted, free of charge, to any person obtaining
+  a copy of this software and associated documentation files (the
+  "Software"), to deal in the Software without restriction, including
+  without limitation the rights to use, copy, modify, merge, publish,
+  distribute, sublicense, and/or sell copies of the Software, and to
+  permit persons to whom the Software is furnished to do so, subject to
+  the following conditions:
+
+  The above copyright notice and this permission notice shall be included
+  in all copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY
+  KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+  WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+  LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+  OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+-->
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN"
+"http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd">
+<article>
+  <articleinfo>
+    <title>SCons tool <quote>cpython</quote> - Reference</title>
+
+    <author>
+      <firstname>Dirk</firstname>
+
+      <surname>Baechle</surname>
+    </author>
+
+    <pubdate>2010-07-28</pubdate>
+  </articleinfo>
+
+  <abstract>
+    <para>This reference lists all the variables that are used within the
+    <quote>cpython</quote> tool, and the available builders. It is intended
+    for SCons tool developers and core programmers, as a normal user you
+    should read the manual instead.</para>
+  </abstract>
+
+  <section id="interna">
+    <title>Interna</title>
+
+    <para>Internally, the builder is based on the
+    <literal>Install</literal>/<literal>InstallAs</literal> methods from
+    <literal>SCons.Tool.install</literal>. It makes use of the basic builder's
+    functions: <literal>installFunc()</literal>, and
+    <literal>add_targets_to_INSTALLED_FILES()</literal>.</para>
+  </section>
+
+  <section>
+    <title>Builders</title>
+
+    <section>
+      <title>InstallPython</title>
+
+      <para>The <quote><literal>InstallPython</literal></quote> method creates
+      <literal>.pyc</literal> or <literal>.pyo</literal> files for
+      <literal>.py</literal> source files and adds them to the list of targets
+      along with the source files. They are later copied to the destination
+      (target) directory.</para>
+
+      <para>Example:</para>
+
+      <para><screen>env = Environment()
+hello = File('hello.py')
+env.InstallPython('/usr/local/bin/', hello)
+env.Alias('install', '/usr/local/bin/')
+</screen></para>
+    </section>
+  </section>
+
+  <section>
+    <title>Variables</title>
+
+    <para><variablelist>
+        <varlistentry>
+          <term>CPYTHON_PYC</term>
+
+          <listitem>
+            <para>Default value is <literal>1</literal>, which means that the
+            Python source files get compiled to <literal>.pyc</literal> files.
+            Set this variable to <literal>0</literal> in order to get
+            optimized <literal>.pyo</literal> files, parallel to your
+            installed sources.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>CPYTHON_EXE</term>
+
+          <listitem>
+            <para>The path to the external Python executable, used for
+            creating optimized <literal>.pyo</literal> files. Default value is
+            '<literal>python</literal>'.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>CPYTHON_PYO_FLAGS</term>
+
+          <listitem>
+            <para>Additional flags for compiling optimized Python files
+            (<literal>.pyo</literal>). The default is
+            '<literal>-O</literal>'.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>CPYTHON_PYO_CMD</term>
+
+          <listitem>
+            <para>The command arguments for compiling optimized Python files
+            (<literal>.pyo</literal>). The default value is '<literal>-c
+            'import sys,py_compile; [py_compile.compile(i) for i in
+            sys.argv[1:]]'</literal>'.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>CPYTHON_PYCOM</term>
+
+          <listitem>
+            <para>The command line for compiling optimized Python files
+            (<literal>.pyo</literal>). Default is '<literal>$CPYTHON_EXE
+            $CPYTHON_PYO_FLAGS $CPYTHON_PYO_CMD</literal>'.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>CPYTHON_PYCOMSTR</term>
+
+          <listitem>
+            <para>The message string for the
+            '<literal>CPYTHON_PYCOM</literal>' command. Default is
+            '<literal>Install file: "$SOURCE" as "$TARGET"</literal>'.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>CPYTHON_SUFFIX</term>
+
+          <listitem>
+            <para>Default value is '.py'. The suffix for Python source
+            files.</para>
+          </listitem>
+        </varlistentry>
+      </variablelist></para>
+  </section>
+</article>

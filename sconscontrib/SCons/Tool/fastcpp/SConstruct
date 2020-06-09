@@ -1,0 +1,10 @@
+import os
+
+env = Environment()
+
+site = os.path.join(os.path.expanduser('~'),'.scons','site_scons','site_tools','fastcpp')
+
+env.Install(site, '__init__.py')
+
+env.Alias('install', site)
+
