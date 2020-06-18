@@ -1,0 +1,40 @@
+==================================================
+ Sphinx-Scons -- an SCons build script for Sphinx
+==================================================
+
+Introduction
+============
+
+This package contains ``SConstruct``, a generic SCons_ build script for
+invoking Sphinx_ to build documentation.
+
+The ``sphinx-quickstart`` program can automatically create two build
+scripts: a ``Makefile`` for Unix systems, and a ``make.bat`` equivalent for
+Windows.  This script has the advantage that it works the same way on both
+systems (once you have installed SCons).
+
+Usage
+=====
+
+Basically, just copy the ``SConstruct`` file to the top-level directory of
+your Sphinx docs, and then use **scons** at a command prompt to build
+things.  Typing ``scons -h`` will give a help message describing all the
+things you can do.
+
+As an example, if you just type ``scons`` in this package's directory, you
+can read this ``README`` in style, á la Sphinx.
+
+Reimplementation
+================
+
+This package is in the process of being reimplemented from scratch as
+SCons_Sphinx_.  This will be a standard SCons "tool"---i.e., one that you
+can use as part of a larger project.
+
+.. _SCons: http://www.scons.org
+.. _Sphinx: http://sphinx.pocoo.org
+.. _SCons_Sphinx: https://bitbucket.org/russel/scons_sphinx
+
+.. Local Variables:
+.. mode: rst
+.. End:
