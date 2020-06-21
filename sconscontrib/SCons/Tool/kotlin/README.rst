@@ -5,7 +5,7 @@ The SCons kotlin tool
 Basics
 ======
 
-This Tool adds basic support for compiling `kotlin` sources.
+This Tool adds basic support for compiling *Kotlin* sources.
 The following Builders are currently provided:
 
 **Kotlin**
@@ -36,8 +36,12 @@ However, for the `KotlinJar` and `KotlinRuntimeJar` Builders it's perfectly lega
 specify::
 
     env = Environment(tools=['default','kotlin'])
-    env.KotlinRuntimeJar('run.jar', 'hello.kt') # or,
-    # env.KotlinRuntimeJar('run', 'hello')
+    env.KotlinRuntimeJar('run.jar', 'hello.kt')
+   
+or::
+
+    env = Environment(tools=['default','kotlin'])
+    env.KotlinRuntimeJar('run', 'hello')
 
 TODO
     It's still unclear what to do with the created `META-INF` folder.

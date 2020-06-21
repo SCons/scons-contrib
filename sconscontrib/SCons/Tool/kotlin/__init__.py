@@ -60,7 +60,7 @@ def _detect(env):
 #
 kotlinc_builder = SCons.Builder.Builder(
         action = SCons.Action.Action('$KOTLINCCOM','$KOTLINCCOMSTR'),
-                                     suffix='KOTLINCLASSSUFFIX', 
+                                     suffix='$KOTLINCLASSSUFFIX', 
                                      src_suffix='$KOTLINSUFFIX', 
                                      single_source=True) # file by file
 
