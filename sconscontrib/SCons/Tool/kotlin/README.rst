@@ -10,21 +10,37 @@ The following Builders are currently provided:
 
 **Kotlin**
     Creates a `*.class` file from the given Kotlin source.
-**NoweaveHtml**
-    Converts the *noweb* input to a HTML document.
-**Notangle**
-    Extracts the code chunk with the given target name from the
-    *noweb* input.
+**KotlinJar**
+    Creates a `*.jar` file from the given Kotlin source (can't be run standalone).
+**KotlinRuntimeJar**
+    Creates a `*.jar` file from the Kotlin source, while including a full runtime. The resulting
+    JAR can be directly run with `java -jar <target>.jar`.
 
 
-Example SConstruct
-==================
+SConstruct examples
+===================
 
-::
+All the three Builders above are implemented as pseudo-Builders. They are clever enough to
+deduce the target name when only a source is given. This even works when also leaving
+out the suffix of the source file.
+
+So, creating a class file from a source `hello.kt` can be as simple as::
 
     env = Environment(tools=['default','kotlin'])
-    env.Kotlin('HelloWorldKt.class', 'HelloWorld.kt')
+    env.Kotlin('hello')
 
+The Builder will correctly derive the target name `HelloKt.class` from this. Adding a different
+target filename to the `Kotlin` Builder has no effect, it will only mix-up your dependencies.
+
+However, for the `KotlinJar` and `KotlinRuntimeJar` Builders it's perfectly legal to
+specify::
+
+    env = Environment(tools=['default','kotlin'])
+    env.KotlinRuntimeJar('run.jar', 'hello.kt') # or,
+    # env.KotlinRuntimeJar('run', 'hello')
+
+TODO
+    It's still unclear what to do with the created `META-INF` folder.
 
 Install
 =======
