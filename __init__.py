@@ -581,7 +581,7 @@ __qrc_builder = SCons.Builder.Builder(
         prefix = '$QT5_QRCCXXPREFIX',
         single_source = 1)
 __ex_moc_builder = SCons.Builder.Builder(
-        action = SCons.Action.CommandGeneratorAction(__moc_generator_from_h, {'cmdstr':'$QT5_MOCCOMSTR'}))
+        action = SCons.Action.CommandGeneratorAction(__moc_generator_from_h, {'cmdstr':'$QT5_MOCFROMHCOMSTR'}))
 __ex_uic_builder = SCons.Builder.Builder(
         action = SCons.Action.Action('$QT5_UICCOM', '$QT5_UICCOMSTR'),
         src_suffix = '.ui')
@@ -814,12 +814,12 @@ def generate(env):
     # Metaobject builder
     mocBld = Builder(action={}, prefix={}, suffix={})
     for h in header_extensions:
-        act = SCons.Action.CommandGeneratorAction(__moc_generator_from_h, {'cmdstr':'$QT5_MOCCOMSTR'})    
+        act = SCons.Action.CommandGeneratorAction(__moc_generator_from_h, {'cmdstr':'$QT5_MOCFROMHCOMSTR'})    
         mocBld.add_action(h, act)
         mocBld.prefix[h] = '$QT5_MOCHPREFIX'
         mocBld.suffix[h] = '$QT5_MOCHSUFFIX'
     for cxx in cxx_suffixes:
-        act = SCons.Action.CommandGeneratorAction(__moc_generator_from_cxx, {'cmdstr':'$QT5_MOCCOMSTR'})    
+        act = SCons.Action.CommandGeneratorAction(__moc_generator_from_cxx, {'cmdstr':'$QT5_MOCFROMCXXCOMSTR'})    
         mocBld.add_action(cxx, act)
         mocBld.prefix[cxx] = '$QT5_MOCCXXPREFIX'
         mocBld.suffix[cxx] = '$QT5_MOCCXXSUFFIX'
@@ -829,12 +829,12 @@ def generate(env):
     # (Strategy #1 for qtsolutions)
     xMocBld = Builder(action={}, prefix={}, suffix={})
     for h in header_extensions:
-        act = SCons.Action.CommandGeneratorAction(__mocx_generator_from_h, {'cmdstr':'$QT5_MOCCOMSTR'})
+        act = SCons.Action.CommandGeneratorAction(__mocx_generator_from_h, {'cmdstr':'$QT5_MOCXFROMHCOMSTR'})
         xMocBld.add_action(h, act)
         xMocBld.prefix[h] = '$QT5_XMOCHPREFIX'
         xMocBld.suffix[h] = '$QT5_XMOCHSUFFIX'
     for cxx in cxx_suffixes:
-        act = SCons.Action.CommandGeneratorAction(__mocx_generator_from_cxx, {'cmdstr':'$QT5_MOCCOMSTR'})    
+        act = SCons.Action.CommandGeneratorAction(__mocx_generator_from_cxx, {'cmdstr':'$QT5_MOCXFROMCXXCOMSTR'})    
         xMocBld.add_action(cxx, act)
         xMocBld.prefix[cxx] = '$QT5_XMOCCXXPREFIX'
         xMocBld.suffix[cxx] = '$QT5_XMOCCXXSUFFIX'
@@ -846,6 +846,7 @@ def generate(env):
     qrc_act = SCons.Action.CommandGeneratorAction(__qrc_generator, {'cmdstr':'$QT5_QRCCOMSTR'})
     cxxfile_builder.add_action('$QT5_QRCSUFFIX', qrc_act)    
     cxxfile_builder.add_emitter('$QT5_QRCSUFFIX', __qrc_emitter)    
+    env.Append(SCANNERS=__qrcscanner)
 
     # We use the emitters of Program / StaticLibrary / SharedLibrary
     # to scan for moc'able files
