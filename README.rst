@@ -18,7 +18,7 @@ package's ``qt4`` folder to
 
 For more infos about this, please refer to 
 
-* the SCons User's Guide, chap. 19.7 "Where to put your custom Builders and Tools" and
+* the SCons User's Guide, sect. "Where to put your custom Builders and Tools" and
 * the SCons Tools Wiki page at `http://scons.org/wiki/ToolsIndex <http://scons.org/wiki/ToolsIndex/>`_.
 
 How to activate
