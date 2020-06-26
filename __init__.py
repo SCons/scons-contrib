@@ -31,11 +31,9 @@ selection method.
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
-from __future__ import print_function
 
 import os.path
 import re
-import sys
 
 import SCons.Action
 import SCons.Builder
@@ -84,8 +82,7 @@ def _contents_regex(e):
     # get_contents() of scons nodes returns a binary buffer, so we convert the regexes also to binary here
     # this won't work for specific encodings like UTF-16, but most of the time we will be fine here.
     # note that the regexes used here are always pure ascii, so we don't have an issue here.
-    if sys.version_info.major >= 3:
-        e = e.encode('ascii')
+    e = e.encode('ascii')
     return e
 
 qrcinclude_re = re.compile(r'<file[^>]*>([^<]*)</file>', re.M)
@@ -436,10 +433,8 @@ def __scanResources(node, env, path, arg):
             else:
                 result.append(itemPath)
         return result
-    contents = node.get_contents()
-    if sys.version_info.major >= 3:
-        # we assume the default xml encoding (utf-8) here
-        contents = contents.decode('utf-8')
+    # we assume the default xml encoding (utf-8) here
+    contents = node.get_contents().decode('utf-8')
     includes = qrcinclude_re.findall(contents)
     qrcpath = os.path.dirname(node.path)
     dirs = [included for included in includes if os.path.isdir(os.path.join(qrcpath,included))]
@@ -574,14 +569,16 @@ __qm_builder = SCons.Builder.Builder(
         src_suffix = '.ts',
         suffix = '.qm')
 __qrc_builder = SCons.Builder.Builder(
-        action = SCons.Action.CommandGeneratorAction(__qrc_generator, {'cmdstr':'$QT5_QRCCOMSTR'}),
+        action = SCons.Action.CommandGeneratorAction(__qrc_generator,
+                                                    {'cmdstr':'$QT5_QRCCOMSTR'}),
         source_scanner = __qrcscanner,
         src_suffix = '$QT5_QRCSUFFIX',
         suffix = '$QT5_QRCCXXSUFFIX',
         prefix = '$QT5_QRCCXXPREFIX',
         single_source = 1)
 __ex_moc_builder = SCons.Builder.Builder(
-        action = SCons.Action.CommandGeneratorAction(__moc_generator_from_h, {'cmdstr':'$QT5_MOCFROMHCOMSTR'}))
+        action = SCons.Action.CommandGeneratorAction(__moc_generator_from_h,
+                                                  {'cmdstr':'$QT5_MOCFROMHCOMSTR'}))
 __ex_uic_builder = SCons.Builder.Builder(
         action = SCons.Action.Action('$QT5_UICCOM', '$QT5_UICCOMSTR'),
         src_suffix = '.ui')
@@ -785,20 +782,11 @@ def generate(env):
                 
         )
 
-    try:
-        env.AddMethod(Ts5, "Ts5")
-        env.AddMethod(Qm5, "Qm5")
-        env.AddMethod(Qrc5, "Qrc5")
-        env.AddMethod(ExplicitMoc5, "ExplicitMoc5")
-        env.AddMethod(ExplicitUic5, "ExplicitUic5")
-    except AttributeError:
-        # Looks like we use a pre-0.98 version of SCons...
-        from SCons.Script.SConscript import SConsEnvironment
-        SConsEnvironment.Ts5 = Ts5
-        SConsEnvironment.Qm5 = Qm5
-        SConsEnvironment.Qrc5 = Qrc5
-        SConsEnvironment.ExplicitMoc5 = ExplicitMoc5
-        SConsEnvironment.ExplicitUic5 = ExplicitUic5
+    env.AddMethod(Ts5, "Ts5")
+    env.AddMethod(Qm5, "Qm5")
+    env.AddMethod(Qrc5, "Qrc5")
+    env.AddMethod(ExplicitMoc5, "ExplicitMoc5")
+    env.AddMethod(ExplicitUic5, "ExplicitUic5")
 
     # Interface builder
     uic5builder = Builder(
@@ -814,12 +802,14 @@ def generate(env):
     # Metaobject builder
     mocBld = Builder(action={}, prefix={}, suffix={})
     for h in header_extensions:
-        act = SCons.Action.CommandGeneratorAction(__moc_generator_from_h, {'cmdstr':'$QT5_MOCFROMHCOMSTR'})    
+        act = SCons.Action.CommandGeneratorAction(__moc_generator_from_h,
+                                                  {'cmdstr':'$QT5_MOCFROMHCOMSTR'})
         mocBld.add_action(h, act)
         mocBld.prefix[h] = '$QT5_MOCHPREFIX'
         mocBld.suffix[h] = '$QT5_MOCHSUFFIX'
     for cxx in cxx_suffixes:
-        act = SCons.Action.CommandGeneratorAction(__moc_generator_from_cxx, {'cmdstr':'$QT5_MOCFROMCXXCOMSTR'})    
+        act = SCons.Action.CommandGeneratorAction(__moc_generator_from_cxx,
+                                                  {'cmdstr':'$QT5_MOCFROMCXXCOMSTR'})
         mocBld.add_action(cxx, act)
         mocBld.prefix[cxx] = '$QT5_MOCCXXPREFIX'
         mocBld.suffix[cxx] = '$QT5_MOCCXXSUFFIX'
@@ -829,12 +819,14 @@ def generate(env):
     # (Strategy #1 for qtsolutions)
     xMocBld = Builder(action={}, prefix={}, suffix={})
     for h in header_extensions:
-        act = SCons.Action.CommandGeneratorAction(__mocx_generator_from_h, {'cmdstr':'$QT5_MOCXFROMHCOMSTR'})
+        act = SCons.Action.CommandGeneratorAction(__mocx_generator_from_h,
+                                                  {'cmdstr':'$QT5_MOCXFROMHCOMSTR'})
         xMocBld.add_action(h, act)
         xMocBld.prefix[h] = '$QT5_XMOCHPREFIX'
         xMocBld.suffix[h] = '$QT5_XMOCHSUFFIX'
     for cxx in cxx_suffixes:
-        act = SCons.Action.CommandGeneratorAction(__mocx_generator_from_cxx, {'cmdstr':'$QT5_MOCXFROMCXXCOMSTR'})    
+        act = SCons.Action.CommandGeneratorAction(__mocx_generator_from_cxx,
+                                                  {'cmdstr':'$QT5_MOCXFROMCXXCOMSTR'})
         xMocBld.add_action(cxx, act)
         xMocBld.prefix[cxx] = '$QT5_XMOCCXXPREFIX'
         xMocBld.suffix[cxx] = '$QT5_XMOCCXXSUFFIX'
@@ -843,7 +835,8 @@ def generate(env):
     # Add the Qrc5 action to the CXX file builder (registers the
     # *.qrc extension with the Environment)     
     cfile_builder, cxxfile_builder = SCons.Tool.createCFileBuilders(env)
-    qrc_act = SCons.Action.CommandGeneratorAction(__qrc_generator, {'cmdstr':'$QT5_QRCCOMSTR'})
+    qrc_act = SCons.Action.CommandGeneratorAction(__qrc_generator,
+                                                  {'cmdstr':'$QT5_QRCCOMSTR'})
     cxxfile_builder.add_action('$QT5_QRCSUFFIX', qrc_act)    
     cxxfile_builder.add_emitter('$QT5_QRCSUFFIX', __qrc_emitter)    
     env.Append(SCANNERS=__qrcscanner)
@@ -859,12 +852,7 @@ def generate(env):
                     )
 
     # TODO: Does dbusxml2cpp need an adapter
-    try:
-        env.AddMethod(enable_modules, "EnableQt5Modules")
-    except AttributeError:
-        # Looks like we use a pre-0.98 version of SCons...
-        from SCons.Script.SConscript import SConsEnvironment
-        SConsEnvironment.EnableQt5Modules = enable_modules
+    env.AddMethod(enable_modules, "EnableQt5Modules")
 
 def enable_modules(self, modules, debug=False, crosscompiling=False) :
     import sys
@@ -1013,6 +1001,6 @@ def enable_modules(self, modules, debug=False, crosscompiling=False) :
 #    env.AppendUnique(FRAMEWORKPATH=[os.path.join(env['QT5DIR'],'lib')])
 #    env.AppendUnique(FRAMEWORKS=['QtCore','QtGui','QtOpenGL', 'AGL'])
     """
-        
+
 def exists(env):
     return _detect(env)

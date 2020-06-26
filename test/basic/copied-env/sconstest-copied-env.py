@@ -26,7 +26,6 @@
 """
 Test Qt with a copied construction environment.
 """
-from __future__ import print_function
 import TestSCons
 
 test = TestSCons.TestSCons()
