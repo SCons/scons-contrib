@@ -15,7 +15,7 @@ if ARGUMENTS.get('variant_dir', 0):
     else:
         builddir = 'build'
     VariantDir(builddir, '.', duplicate=dup)
-    print builddir, dup
+    print(builddir, dup)
     sconscript = Dir(builddir).File('SConscript')
 else:
     sconscript = File('SConscript')

@@ -172,7 +172,7 @@ def parseProFile(fpath):
         if len(kl) > 1:
             # Close old key
             if curkey:
-                if keys.has_key(curkey):
+                if curkey in keys:
                     keys[curkey].extend(curlist)
                 else:
                     keys[curkey] = curlist
@@ -190,7 +190,7 @@ def parseProFile(fpath):
                     curlist = value.split()
                 else:
                     # Single line key
-                    if keys.has_key(curkey):
+                    if curkey in keys:
                         keys[curkey].extend(value.split())
                     else:
                         keys[curkey] = value.split()
@@ -205,7 +205,7 @@ def parseProFile(fpath):
                 if curkey:
                     # Append last item for current key...
                     curlist.extend(l.split())
-                    if keys.has_key(curkey):
+                    if curkey in keys:
                         keys[curkey].extend(curlist)
                     else:
                         keys[curkey] = curlist
@@ -250,7 +250,7 @@ def collectModulesFromFiles(fpath):
 def validKey(key, pkeys):
     """ Helper function
     """
-    if pkeys.has_key(key) and len(pkeys[key]) > 0:
+    if key in pkeys and len(pkeys[key]) > 0:
         return True
     
     return False
@@ -286,15 +286,15 @@ def collectModules(dirpath, pkeys):
     # Check CONFIG keyword
     if validKey('CONFIG', pkeys):
         for k in pkeys['CONFIG']:
-            if config_modules.has_key(k):
+            if k in config_modules:
                 mods.extend(config_modules[k])
-            if config_defines.has_key(k):
+            if k in config_defines:
                 defines.extend(config_defines[k])
 
     # Check QT keyword
     if validKey('QT', pkeys):
         for k in pkeys['QT']:
-            if config_modules.has_key(k):
+            if k in config_modules:
                 mods.extend(config_modules[k])
 
     # Make lists unique
@@ -325,7 +325,7 @@ def writeSConscript(dirpath, profile, pkeys):
     allmods = True
     for m in mods:
         if m not in pkeys['qtmodules']:
-            print "   no module %s" % m
+            print("   no module %s" % m)
             allmods = False
     if not allmods:
         return False
@@ -361,7 +361,7 @@ env = qtEnv.Clone()
  
     # Add special environment flags
     if len(qtenv_flags):
-        for key, value in qtenv_flags.iteritems():    
+        for key, value in list(qtenv_flags.items()):    
             sc.write("env['%s']=%s\n" % (key, value))
     
     
@@ -462,7 +462,7 @@ def createSConsTest(dirpath, profile, options):
 
     head, tail = os.path.split(dirpath)
     if head and tail:
-        print os.path.join(dirpath, profile)
+        print(os.path.join(dirpath, profile))
         pkeys['qtmodules'] = options['qtmodules']
         if not writeSConscript(dirpath, profile[:-4], pkeys):
             return
@@ -520,12 +520,12 @@ def main():
     if not options['qtpath']:
         qtpath = detectLatestQtVersion()
         if qtpath == "":
-            print "No Qt installation found!"
+            print("No Qt installation found!")
             sys.exit(1)
 
         options['pkgconfig'] = detectPkgconfigPath(qtpath)
         if options['pkgconfig'] == "":
-            print "No pkgconfig files found!"
+            print("No pkgconfig files found!")
             sys.exit(1)
 
         options['qtpath'] = qtpath

@@ -78,9 +78,16 @@ except NameError:
             result.reverse()
         return result
 
+def _contents_regex(e):
+    # get_contents() of scons nodes returns a binary buffer, so we convert the regexes also to binary here
+    # this won't work for specific encodings like UTF-16, but most of the time we will be fine here.
+    # note that the regexes used here are always pure ascii, so we don't have an issue here.
+    e = e.encode('ascii')
+    return e
+
 qrcinclude_re = re.compile(r'<file[^>]*>([^<]*)</file>', re.M)
 
-mocver_re = re.compile(r'.*(\d+)\.(\d+)\.(\d+).*')
+mocver_re = re.compile(_contents_regex(r'.*(\d+)\.(\d+)\.(\d+).*'))
 
 def transformToWinePath(path) :
     return os.popen('winepath -w "%s"'%path).read().strip().replace('\\','/')
@@ -124,12 +131,12 @@ class _Automoc:
         self.objBuilderName = objBuilderName
         # some regular expressions:
         # Q_OBJECT detection
-        self.qo_search = re.compile(r'[^A-Za-z0-9]Q_OBJECT[^A-Za-z0-9]')
+        self.qo_search = re.compile(_contents_regex(r'[^A-Za-z0-9]Q_OBJECT[^A-Za-z0-9]'))
         # cxx and c comment 'eater'
-        self.ccomment = re.compile(r'/\*(.*?)\*/',re.S)
-        self.cxxcomment = re.compile(r'//.*$',re.M)
+        self.ccomment = re.compile(_contents_regex(r'/\*(.*?)\*/'),re.S)
+        self.cxxcomment = re.compile(_contents_regex(r'//.*$'),re.M)
         # we also allow Q_OBJECT in a literal string
-        self.literal_qobject = re.compile(r'"[^\n]*Q_OBJECT[^\n]*"')
+        self.literal_qobject = re.compile(_contents_regex(r'"[^\n]*Q_OBJECT[^\n]*"'))
         
     def create_automoc_options(self, env):
         """
@@ -191,32 +198,32 @@ class _Automoc:
             h = find_file(hname, [cpp.get_dir()]+moc_options['cpppaths'], env.File)
             if h:
                 if moc_options['debug']:
-                    print "scons: qt4: Scanning '%s' (header of '%s')" % (str(h), str(cpp))
+                    print("scons: qt4: Scanning '%s' (header of '%s')" % (str(h), str(cpp)))
                 h_contents = h.get_contents()
                 if moc_options['gobble_comments']:
-                    h_contents = self.ccomment.sub('', h_contents)
-                    h_contents = self.cxxcomment.sub('', h_contents)
-                h_contents = self.literal_qobject.sub('""', h_contents)
+                    h_contents = self.ccomment.sub(_contents_regex(''), h_contents)
+                    h_contents = self.cxxcomment.sub(_contents_regex(''), h_contents)
+                h_contents = self.literal_qobject.sub(_contents_regex('""'), h_contents)
                 break
         if not h and moc_options['debug']:
-            print "scons: qt4: no header for '%s'." % (str(cpp))
+            print("scons: qt4: no header for '%s'." % (str(cpp)))
         if h and self.qo_search.search(h_contents):
             # h file with the Q_OBJECT macro found -> add moc_cpp
             moc_cpp = env.Moc4(h)
             if moc_options['debug']:
-                print "scons: qt4: found Q_OBJECT macro in '%s', moc'ing to '%s'" % (str(h), str(moc_cpp))
+                print("scons: qt4: found Q_OBJECT macro in '%s', moc'ing to '%s'" % (str(h), str(moc_cpp)))
             
             # Now, check whether the corresponding CPP file
             # includes the moc'ed output directly...
-            inc_moc_cpp = r'^\s*#\s*include\s+"%s"' % str(moc_cpp[0])
+            inc_moc_cpp = _contents_regex(r'^\s*#\s*include\s+"%s"' % str(moc_cpp[0]))
             if cpp and re.search(inc_moc_cpp, cpp_contents, re.M):
                 if moc_options['debug']:
-                    print "scons: qt4: CXX file '%s' directly includes the moc'ed output '%s', no compiling required" % (str(cpp), str(moc_cpp))
+                    print("scons: qt4: CXX file '%s' directly includes the moc'ed output '%s', no compiling required" % (str(cpp), str(moc_cpp)))
                 env.Depends(cpp, moc_cpp)
             else:
                 moc_o = self.objBuilder(moc_cpp)
                 if moc_options['debug']:
-                    print "scons: qt4: compiling '%s' to '%s'" % (str(cpp), str(moc_o))
+                    print("scons: qt4: compiling '%s' to '%s'" % (str(cpp), str(moc_o)))
                 out_sources.extend(moc_o)
         if cpp and self.qo_search.search(cpp_contents):
             # cpp file with Q_OBJECT macro found -> add moc
@@ -224,7 +231,7 @@ class _Automoc:
             moc = env.Moc4(cpp)
             env.Ignore(moc, moc)
             if moc_options['debug']:
-                print "scons: qt4: found Q_OBJECT macro in '%s', moc'ing to '%s'" % (str(cpp), str(moc))
+                print("scons: qt4: found Q_OBJECT macro in '%s', moc'ing to '%s'" % (str(cpp), str(moc)))
 
     def __automoc_strategy_include_driven(self, env, moc_options,
                                           cpp, cpp_contents, out_sources):
@@ -242,8 +249,8 @@ class _Automoc:
             cxx_moc = "%s%s%s" % (env.subst('$QT4_XMOCCXXPREFIX'),
                                   self.splitext(cpp.name)[0],
                                   env.subst('$QT4_XMOCCXXSUFFIX'))
-            inc_h_moc = r'#include\s+"%s"' % h_moc
-            inc_cxx_moc = r'#include\s+"%s"' % cxx_moc
+            inc_h_moc = _contents_regex(r'#include\s+"%s"' % h_moc)
+            inc_cxx_moc = _contents_regex(r'#include\s+"%s"' % cxx_moc)
             
             # Search for special includes in qtsolutions style
             if cpp and re.search(inc_h_moc, cpp_contents):
@@ -259,7 +266,7 @@ class _Automoc:
                     h = find_file(hname, [cpp.get_dir()]+moc_options['cpppaths'], env.File)
                     if h:
                         if moc_options['debug']:
-                            print "scons: qt4: Scanning '%s' (header of '%s')" % (str(h), str(cpp))
+                            print("scons: qt4: Scanning '%s' (header of '%s')" % (str(h), str(cpp)))
                         h_contents = h.get_contents()
                         if moc_options['gobble_comments']:
                             h_contents = self.ccomment.sub('', h_contents)
@@ -267,7 +274,7 @@ class _Automoc:
                         h_contents = self.literal_qobject.sub('""', h_contents)
                         break
                 if not h and moc_options['debug']:
-                    print "scons: qt4: no header for '%s'." % (str(cpp))
+                    print("scons: qt4: no header for '%s'." % (str(cpp)))
                 if h and self.qo_search.search(h_contents):
                     # h file with the Q_OBJECT macro found -> add moc_cpp
                     moc_cpp = env.XMoc4(h)
@@ -281,10 +288,10 @@ class _Automoc:
                                 out_sources.pop(idx)
                                 break
                     if moc_options['debug']:
-                        print "scons: qt4: found Q_OBJECT macro in '%s', moc'ing to '%s'" % (str(h), str(h_moc))
+                        print("scons: qt4: found Q_OBJECT macro in '%s', moc'ing to '%s'" % (str(h), str(h_moc)))
                 else:
                     if moc_options['debug']:
-                        print "scons: qt4: found no Q_OBJECT macro in '%s', but a moc'ed version '%s' gets included in '%s'" % (str(h), inc_h_moc, cpp.name)
+                        print("scons: qt4: found no Q_OBJECT macro in '%s', but a moc'ed version '%s' gets included in '%s'" % (str(h), inc_h_moc, cpp.name))
 
             if cpp and re.search(inc_cxx_moc, cpp_contents):
                 # cpp file with #include directive for a MOCed cxx file found -> add moc
@@ -293,10 +300,10 @@ class _Automoc:
                     env.Ignore(moc, moc)
                     added = True
                     if moc_options['debug']:
-                        print "scons: qt4: found Q_OBJECT macro in '%s', moc'ing to '%s'" % (str(cpp), str(moc))
+                        print("scons: qt4: found Q_OBJECT macro in '%s', moc'ing to '%s'" % (str(cpp), str(moc)))
                 else:
                     if moc_options['debug']:
-                        print "scons: qt4: found no Q_OBJECT macro in '%s', although a moc'ed version '%s' of itself gets included" % (cpp.name, inc_cxx_moc)
+                        print("scons: qt4: found no Q_OBJECT macro in '%s', although a moc'ed version '%s' of itself gets included" % (cpp.name, inc_cxx_moc))
 
             if not added:
                 # Fallback to default Automoc strategy (Q_OBJECT driven)
@@ -328,18 +335,18 @@ class _Automoc:
         for obj in source:
             if not moc_options['auto_scan']:
                 break
-            if isinstance(obj,basestring):  # big kludge!
-                print "scons: qt4: '%s' MAYBE USING AN OLD SCONS VERSION AND NOT CONVERTED TO 'File'. Discarded." % str(obj)
+            if isinstance(obj,str):  # big kludge!
+                print("scons: qt4: '%s' MAYBE USING AN OLD SCONS VERSION AND NOT CONVERTED TO 'File'. Discarded." % str(obj))
                 continue
             if not obj.has_builder():
                 # binary obj file provided
                 if moc_options['debug']:
-                    print "scons: qt4: '%s' seems to be a binary. Discarded." % str(obj)
+                    print("scons: qt4: '%s' seems to be a binary. Discarded." % str(obj))
                 continue
             cpp = obj.sources[0]
             if not self.splitext(str(cpp))[1] in cxx_suffixes:
                 if moc_options['debug']:
-                    print "scons: qt4: '%s' is no cxx file. Discarded." % str(cpp) 
+                    print("scons: qt4: '%s' is no cxx file. Discarded." % str(cpp)) 
                 # c or fortran source
                 continue
             try:
@@ -426,7 +433,8 @@ def __scanResources(node, env, path, arg):
             else:
                 result.append(itemPath)
         return result
-    contents = node.get_contents()
+    # we assume the default xml encoding (utf-8) here
+    contents = node.get_contents().decode('utf-8')
     includes = qrcinclude_re.findall(contents)
     qrcpath = os.path.dirname(node.path)
     dirs = [included for included in includes if os.path.isdir(os.path.join(qrcpath,included))]
@@ -562,7 +570,7 @@ __qm_builder = SCons.Builder.Builder(
         suffix = '.qm')
 __qrc_builder = SCons.Builder.Builder(
         action = SCons.Action.CommandGeneratorAction(__qrc_generator,
-                                                    {"cmdstr":"$QT4_QRCCOMSTR"}),
+                                                    {'cmdstr':'$QT4_QRCCOMSTR'}),
         source_scanner = __qrcscanner,
         src_suffix = '$QT4_QRCSUFFIX',
         suffix = '$QT4_QRCCXXSUFFIX',
@@ -570,7 +578,7 @@ __qrc_builder = SCons.Builder.Builder(
         single_source = 1)
 __ex_moc_builder = SCons.Builder.Builder(
         action = SCons.Action.CommandGeneratorAction(__moc_generator_from_h,
-                                                  {"cmdstr":"$QT4_MOCFROMHCOMSTR"}))
+                                                  {'cmdstr':'$QT4_MOCFROMHCOMSTR'}))
 __ex_uic_builder = SCons.Builder.Builder(
         action = SCons.Action.Action('$QT4_UICCOM', '$QT4_UICCOMSTR'),
         src_suffix = '.ui')
@@ -772,20 +780,11 @@ def generate(env):
                 
         )
 
-    try:
-        env.AddMethod(Ts4, "Ts4")
-        env.AddMethod(Qm4, "Qm4")
-        env.AddMethod(Qrc4, "Qrc4")
-        env.AddMethod(ExplicitMoc4, "ExplicitMoc4")
-        env.AddMethod(ExplicitUic4, "ExplicitUic4")
-    except AttributeError:
-        # Looks like we use a pre-0.98 version of SCons...
-        from SCons.Script.SConscript import SConsEnvironment
-        SConsEnvironment.Ts4 = Ts4
-        SConsEnvironment.Qm4 = Qm4
-        SConsEnvironment.Qrc4 = Qrc4
-        SConsEnvironment.ExplicitMoc4 = ExplicitMoc4
-        SConsEnvironment.ExplicitUic4 = ExplicitUic4
+    env.AddMethod(Ts4, "Ts4")
+    env.AddMethod(Qm4, "Qm4")
+    env.AddMethod(Qrc4, "Qrc4")
+    env.AddMethod(ExplicitMoc4, "ExplicitMoc4")
+    env.AddMethod(ExplicitUic4, "ExplicitUic4")
 
     # Interface builder
     uic4builder = Builder(
@@ -802,13 +801,13 @@ def generate(env):
     mocBld = Builder(action={}, prefix={}, suffix={})
     for h in header_extensions:
         act = SCons.Action.CommandGeneratorAction(__moc_generator_from_h,
-                                                  {"cmdstr":"$QT4_MOCFROMHCOMSTR"})
+                                                  {'cmdstr':'$QT4_MOCFROMHCOMSTR'})
         mocBld.add_action(h, act)
         mocBld.prefix[h] = '$QT4_MOCHPREFIX'
         mocBld.suffix[h] = '$QT4_MOCHSUFFIX'
     for cxx in cxx_suffixes:
         act = SCons.Action.CommandGeneratorAction(__moc_generator_from_cxx,
-                                                  {"cmdstr":"$QT4_MOCFROMCXXCOMSTR"})
+                                                  {'cmdstr':'$QT4_MOCFROMCXXCOMSTR'})
         mocBld.add_action(cxx, act)
         mocBld.prefix[cxx] = '$QT4_MOCCXXPREFIX'
         mocBld.suffix[cxx] = '$QT4_MOCCXXSUFFIX'
@@ -819,13 +818,13 @@ def generate(env):
     xMocBld = Builder(action={}, prefix={}, suffix={})
     for h in header_extensions:
         act = SCons.Action.CommandGeneratorAction(__mocx_generator_from_h,
-                                                  {"cmdstr":"$QT4_MOCXFROMHCOMSTR"})
+                                                  {'cmdstr':'$QT4_MOCXFROMHCOMSTR'})
         xMocBld.add_action(h, act)
         xMocBld.prefix[h] = '$QT4_XMOCHPREFIX'
         xMocBld.suffix[h] = '$QT4_XMOCHSUFFIX'
     for cxx in cxx_suffixes:
         act = SCons.Action.CommandGeneratorAction(__mocx_generator_from_cxx,
-                                                  {"cmdstr":"$QT4_MOCXFROMCXXCOMSTR"})
+                                                  {'cmdstr':'$QT4_MOCXFROMCXXCOMSTR'})
         xMocBld.add_action(cxx, act)
         xMocBld.prefix[cxx] = '$QT4_XMOCCXXPREFIX'
         xMocBld.suffix[cxx] = '$QT4_XMOCCXXSUFFIX'
@@ -835,7 +834,7 @@ def generate(env):
     # *.qrc extension with the Environment)     
     cfile_builder, cxxfile_builder = SCons.Tool.createCFileBuilders(env)
     qrc_act = SCons.Action.CommandGeneratorAction(__qrc_generator,
-                                                  {"cmdstr":"$QT4_QRCCOMSTR"})
+                                                  {'cmdstr':'$QT4_QRCCOMSTR'})
     cxxfile_builder.add_action('$QT4_QRCSUFFIX', qrc_act)    
     cxxfile_builder.add_emitter('$QT4_QRCSUFFIX', __qrc_emitter)    
     env.Append(SCANNERS=__qrcscanner)
@@ -851,12 +850,7 @@ def generate(env):
                     )
 
     # TODO: Does dbusxml2cpp need an adapter
-    try:
-        env.AddMethod(enable_modules, "EnableQt4Modules")
-    except AttributeError:
-        # Looks like we use a pre-0.98 version of SCons...
-        from SCons.Script.SConscript import SConsEnvironment
-        SConsEnvironment.EnableQt4Modules = enable_modules
+    env.AddMethod(enable_modules, "EnableQt4Modules")
 
 def enable_modules(self, modules, debug=False, crosscompiling=False) :
     import sys
