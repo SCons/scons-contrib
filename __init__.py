@@ -34,6 +34,7 @@ selection method.
 
 import os.path
 import re
+import subprocess
 
 import SCons.Action
 import SCons.Builder
@@ -90,7 +91,8 @@ qrcinclude_re = re.compile(r'<file[^>]*>([^<]*)</file>', re.M)
 mocver_re = re.compile(_contents_regex(r'.*(\d+)\.(\d+)\.(\d+).*'))
 
 def transformToWinePath(path) :
-    return os.popen('winepath -w "%s"'%path).read().strip().replace('\\','/')
+    pipe = subprocess.Popen('winepath -w "%s"'%path, shell=True, stdout=PIPE).stdout
+    return pipe.read().strip().replace('\\','/')
 
 header_extensions = [".h", ".hxx", ".hpp", ".hh"]
 if SCons.Util.case_sensitive_suffixes('.h', '.H'):
@@ -397,7 +399,12 @@ def _detect(env):
 
     moc = env.WhereIs('moc-qt5') or env.WhereIs('moc5') or env.WhereIs('moc')
     if moc:
-        vernumber = os.popen3('%s -v' % moc)[2].read()
+        pipes = subprocess.Popen('%s -v' % moc,
+                                 shell=True, stdin=subprocess.PIPE,
+                                 stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE,
+                                 close_fds=True)
+        vernumber = pipes.stdout.read()
         vernumber = mocver_re.match(vernumber)
         if vernumber:
             vernumber = [ int(x) for x in vernumber.groups() ]
