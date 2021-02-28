@@ -23,22 +23,25 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-'''
+"""
 Various code items used by all the tests.
-'''
+"""
 
-__author__ = 'Russel Winder <russel@russel.org.uk>'
-__date__ = '2011-08-31'
+__author__ = "Russel Winder <russel@russel.org.uk>"
+__date__ = "2011-08-31"
 
 import os
 
-thisFilePath = os.path.dirname ( __file__ )
+thisFilePath = os.path.dirname(__file__)
 
-def setUpTest ( test ) :
-    '''
+
+def setUpTest(test):
+    """
     The project containing the SConstruct file is called project by convention for all tests, so set it up
     as a fixture.  The sphinx tool code must be copied over as a fixture.  The code here is dependent on the
     code of the tool.
-    '''
-    test.dir_fixture ( 'project' )
-    test.file_fixture ( thisFilePath + '/../../__init__.py' , 'site_scons/site_tools/sphinx/__init__.py' )
+    """
+    test.dir_fixture("project")
+    test.file_fixture(
+        thisFilePath + "/../../__init__.py", "site_scons/site_tools/sphinx/__init__.py"
+    )

@@ -27,28 +27,32 @@
 #  https://bitbucket.org/zondo/sphinx-scons/.  It is almost certain there are some bits of cut-and-paste
 #  from that project to this one.  Sphinx-Scons is licenced under the BSD licence.
 
-'''
+"""
 A SCons tool for supporting Sphinx processing.
-'''
+"""
 
-__author__ = 'Russel Winder <russel@russel.org.uk>'
-__date__ = '2011-08-31'
+__author__ = "Russel Winder <russel@russel.org.uk>"
+__date__ = "2011-08-31"
 
 import os
 
 from SCons.Script import WhereIs
 from SCons.Util import CLVar, is_List
 
-defaultSourceDirectory = 'source'
-defaultBuildDirectory = 'build'
+defaultSourceDirectory = "source"
+defaultBuildDirectory = "build"
 
-def Source(env, source = [defaultSourceDirectory], target = None, *args, **kwargs):
+
+def Source(env, source=[defaultSourceDirectory], target=None, *args, **kwargs):
     buildDirectory = defaultBuildDirectory
-    if not is_List(source): source = [source]
-    if len(source) < 1: raise ValueError('Must have at least one source directory.')
+    if not is_List(source):
+        source = [source]
+    if len(source) < 1:
+        raise ValueError("Must have at least one source directory.")
     sources = []
     if target != None:
-        if not isinstance(target, str): raise ValueError('target must be a string value.')
+        if not isinstance(target, str):
+            raise ValueError("target must be a string value.")
         buildDirectory = target
     targets = []
     for directoryName in source:
@@ -57,21 +61,30 @@ def Source(env, source = [defaultSourceDirectory], target = None, *args, **kwarg
         for root, directories, files in os.walk(directoryName):
             for name in files:
                 base, ext = os.path.splitext(name)
-                if ext == '.rst':
-                    sourceList.append(root + '/' + name)
-                    targetList.append(os.path.join(buildDirectory, root.replace(directoryName, 'html'), base + '.html'))
+                if ext == ".rst":
+                    sourceList.append(root + "/" + name)
+                    targetList.append(
+                        os.path.join(
+                            buildDirectory,
+                            root.replace(directoryName, "html"),
+                            base + ".html",
+                        )
+                    )
         sources.append(sourceList)
         targets.append(targetList)
     return []
 
 
-def HTML(env, source = [defaultSourceDirectory], target = None, *args, **kwargs):
+def HTML(env, source=[defaultSourceDirectory], target=None, *args, **kwargs):
     buildDirectory = defaultBuildDirectory
-    if not is_List(source): source = [source]
-    if len(source) < 1: raise ValueError('Must have at least one source directory.')
+    if not is_List(source):
+        source = [source]
+    if len(source) < 1:
+        raise ValueError("Must have at least one source directory.")
     sources = []
     if target != None:
-        if not isinstance(target, str): raise ValueError('target must be a string value.')
+        if not isinstance(target, str):
+            raise ValueError("target must be a string value.")
         buildDirectory = target
     targets = []
     for directoryName in source:
@@ -80,45 +93,61 @@ def HTML(env, source = [defaultSourceDirectory], target = None, *args, **kwargs)
         for root, directories, files in os.walk(directoryName):
             for name in files:
                 base, ext = os.path.splitext(name)
-                if ext == '.rst':
-                    sourceList.append(root + '/' + name)
-                    targetList.append(os.path.join(buildDirectory, root.replace(directoryName, 'html'), base + '.html'))
+                if ext == ".rst":
+                    sourceList.append(root + "/" + name)
+                    targetList.append(
+                        os.path.join(
+                            buildDirectory,
+                            root.replace(directoryName, "html"),
+                            base + ".html",
+                        )
+                    )
         sources.append(sourceList)
         targets.append(targetList)
     knownExtraFiles = [
-        'doctrees/environment.pickle',
-        'doctrees/index.doctree',
-        'html/.buildinfo',
-        'html/genindex.html',
-        'html/objects.inv',
-        'html/search.html',
-        'html/searchindex.js',
-        'html/_sources/index.txt',
-        'html/_static/basic.css',
-        'html/_static/default.css',
-        'html/_static/doctools.js',
-        'html/_static/file.png',
-        'html/_static/jquery.js',
-        'html/_static/minus.png',
-        'html/_static/plus.png',
-        'html/_static/pygments.css',
-        'html/_static/searchtools.js',
-        'html/_static/sidebar.js',
-        'html/_static/underscore.js',
-       ]
-    constructedKnownExtraFiles = [buildDirectory + '/' + name for name in knownExtraFiles]
+        "doctrees/environment.pickle",
+        "doctrees/index.doctree",
+        "html/.buildinfo",
+        "html/genindex.html",
+        "html/objects.inv",
+        "html/search.html",
+        "html/searchindex.js",
+        "html/_sources/index.txt",
+        "html/_static/basic.css",
+        "html/_static/default.css",
+        "html/_static/doctools.js",
+        "html/_static/file.png",
+        "html/_static/jquery.js",
+        "html/_static/minus.png",
+        "html/_static/plus.png",
+        "html/_static/pygments.css",
+        "html/_static/searchtools.js",
+        "html/_static/sidebar.js",
+        "html/_static/underscore.js",
+    ]
+    constructedKnownExtraFiles = [
+        buildDirectory + "/" + name for name in knownExtraFiles
+    ]
     env.Precious(constructedKnownExtraFiles)
     returnValue = []
     for i in range(len(source)):
         env.SideEffect(constructedKnownExtraFiles, targets[i])
-        returnValue += env.Command(targets[i], sources[i],  '{0} {1} -b html -d {2}/doctrees {3} {2}/html'.format(env['SPHINX'], env['SPHINXFLAGS'], buildDirectory, source[i]))
+        returnValue += env.Command(
+            targets[i],
+            sources[i],
+            "{0} {1} -b html -d {2}/doctrees {3} {2}/html".format(
+                env["SPHINX"], env["SPHINXFLAGS"], buildDirectory, source[i]
+            ),
+        )
     return returnValue
 
+
 def exists(env):
-    return WhereIs('sphinx-build')
+    return WhereIs("sphinx-build")
+
 
 def generate(env):
-    env['SPHINX'] = env.Detect('sphinx-build') or 'sphinx-build'
-    env['SPHINXFLAGS'] = CLVar('')
+    env["SPHINX"] = env.Detect("sphinx-build") or "sphinx-build"
+    env["SPHINXFLAGS"] = CLVar("")
     env.AddMethod(Source)
     env.AddMethod(HTML)
