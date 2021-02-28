@@ -1,3 +1,6 @@
+NOTE: This branch is Python 2.7 compatible. No further development or PR's will be accepted.
+############################################################################################
+
 For now do not install using pip or setup.py as those need some maintenence and won't work.
 ###########################################################################################
 
