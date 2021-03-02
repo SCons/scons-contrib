@@ -31,14 +31,14 @@ import TestSCons
 
 test = TestSCons.TestSCons()
 test.dir_fixture("image")
-test.file_fixture('SConstruct-oflag','SConstruct')
-test.file_fixture('../../__init__.py','site_scons/site_tools/cpython/__init__.py')
-test.run(arguments = 'install')
+test.file_fixture("SConstruct-oflag", "SConstruct")
+test.file_fixture("../../__init__.py", "site_scons/site_tools/cpython/__init__.py")
+test.run(arguments="install")
 
-test.must_exist(test.workpath('pybuilderdir/pyfiles/hello.pyo'))
-test.must_exist(test.workpath('pybuilderdir/pyfiles/hello2.pyo'))
-test.must_exist(test.workpath('pybuilderdir/pyfiles2/hello.pyo'))
-test.must_exist(test.workpath('pybuilderdir/pyfiles2/hello2.pyo'))
+test.must_exist(test.workpath("pybuilderdir/pyfiles/hello.pyo"))
+test.must_exist(test.workpath("pybuilderdir/pyfiles/hello2.pyo"))
+test.must_exist(test.workpath("pybuilderdir/pyfiles2/hello.pyo"))
+test.must_exist(test.workpath("pybuilderdir/pyfiles2/hello2.pyo"))
 
 test.pass_test()
 

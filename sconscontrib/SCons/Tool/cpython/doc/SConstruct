@@ -1,10 +1,6 @@
+# MIT License
 #
-# A simple SConstruct for creating PDF files from Docbook XML
-# sources. It's plain and ugly...but does its job ;).
-#
-
-#
-# Copyright (c) 2001-2010 The SCons Foundation
+# Copyright The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -25,32 +21,37 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+"""
+# A simple SConstruct for creating PDF files from Docbook XML
+# sources. It's plain and ugly...but does its job ;).
+"""
 
 import os
 
-bld_fo = Builder(action = 'xsltproc ./pdf.xsl $SOURCE > $TARGET',
-                 suffix = '.fo',
-                 src_suffix = '.xml',
-                 single_source = True)
+bld_fo = Builder(
+    action="xsltproc ./pdf.xsl $SOURCE > $TARGET",
+    suffix=".fo",
+    src_suffix=".xml",
+    single_source=True,
+)
 
-bld_html = Builder(action = 'xsltproc ./html.xsl $SOURCE > $TARGET',
-                 suffix = '.html',
-                 src_suffix = '.xml',
-                 single_source = True)
+bld_html = Builder(
+    action="xsltproc ./html.xsl $SOURCE > $TARGET",
+    suffix=".html",
+    src_suffix=".xml",
+    single_source=True,
+)
 
-bld_pdf = Builder(action = 'fop $SOURCE $TARGET',
-                 suffix = '.pdf',
-                 src_suffix = '.fo',
-                 single_source = True)
+bld_pdf = Builder(
+    action="fop $SOURCE $TARGET", suffix=".pdf", src_suffix=".fo", single_source=True
+)
 
-env = Environment(ENV = os.environ,
-                  BUILDERS = {'Fo' : bld_fo,
-                              'Html' : bld_html,
-                              'Pdf' : bld_pdf})
+env = Environment(
+    ENV=os.environ, BUILDERS={"Fo": bld_fo, "Html": bld_html, "Pdf": bld_pdf}
+)
 
-env.Pdf('manual', env.Fo('manual'))
-env.Pdf('reference', env.Fo('reference'))
+env.Pdf("manual", env.Fo("manual"))
+env.Pdf("reference", env.Fo("reference"))
 
-env.Html('manual','manual')
-env.Html('reference','reference')
-
+env.Html("manual", "manual")
+env.Html("reference", "reference")
