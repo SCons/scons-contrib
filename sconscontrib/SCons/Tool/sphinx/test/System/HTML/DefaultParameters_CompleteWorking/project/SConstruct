@@ -1,2 +1,2 @@
-environment = Environment ( tools = [ 'sphinx' ] )
-environment.HTML ( )
+environment = Environment(tools=["sphinx"])
+environment.HTML()

@@ -23,24 +23,24 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-'''
+"""
 A test to show that having an empty SConstruct does not fail.
-'''
+"""
 
-__author__ = 'Russel Winder <russel@russel.org.uk>'
-__date__ = '2011-08-31'
+__author__ = "Russel Winder <russel@russel.org.uk>"
+__date__ = "2011-08-31"
 
 import os
 import sys
 
-sys.path.append ( os.path.realpath ( os.path.dirname ( __file__ ) + '/..' ) )
+sys.path.append(os.path.realpath(os.path.dirname(__file__) + "/.."))
 
 from common import setUpTest
 
 import TestSCons
 
-test = TestSCons.TestSCons ( )
-setUpTest ( test )
-#test.run ( )
-test.run ( stderr = None )
-test.pass_test ( )
+test = TestSCons.TestSCons()
+setUpTest(test)
+# test.run ( )
+test.run(stderr=None)
+test.pass_test()

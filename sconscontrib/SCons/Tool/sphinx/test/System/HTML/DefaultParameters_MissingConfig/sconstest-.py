@@ -23,25 +23,29 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-'''
+"""
 A test to show that using the default parameters to the HTML builder works as required.
-'''
+"""
 
-__author__ = 'Russel Winder <russel@russel.org.uk>'
-__date__ = '2011-08-31'
+__author__ = "Russel Winder <russel@russel.org.uk>"
+__date__ = "2011-08-31"
 
 import os
 import sys
 
-sys.path.append ( os.path.realpath ( os.path.dirname ( __file__ ) + '/../..' ) )
+sys.path.append(os.path.realpath(os.path.dirname(__file__) + "/../.."))
 
 from common import setUpTest
 
 import TestSCons
 
-test = TestSCons.TestSCons ( )
-setUpTest ( test )
-test.run ( stderr = r""".*
+test = TestSCons.TestSCons()
+setUpTest(test)
+test.run(
+    stderr=r""".*
 Error: Source directory doesn't contain conf.py file.
-scons: \*\*\* \[build/html/file.html\] Error 1""" , match = TestSCons.match_re_dotall , status = 2 )
-test.pass_test ( )
+scons: \*\*\* \[build/html/file.html\] Error 1""",
+    match=TestSCons.match_re_dotall,
+    status=2,
+)
+test.pass_test()
