@@ -54,20 +54,23 @@ def createPythonBuilder(env):
     """
 
     try:
-        PythonInstallBuilder = env['BUILDERS']['InstallPython']
+        PythonInstallBuilder = env["BUILDERS"]["InstallPython"]
     except KeyError:
         from SCons.Tool.install import installFunc, add_targets_to_INSTALLED_FILES
-        installpython_action = SCons.Action.Action(installFunc, '$CPYTHON_PYCOMSTR')
+
+        installpython_action = SCons.Action.Action(installFunc, "$CPYTHON_PYCOMSTR")
         PythonInstallBuilder = SCons.Builder.Builder(
-                                 action = installpython_action,
-                                 src_suffix = '$CPYTHON_SUFFIX',
-                                 target_factory = env.fs.Entry,
-                                 source_factory = env.fs.Entry,
-                                 multi = 1,
-                                 emitter = [ add_targets_to_INSTALLED_FILES ],
-                                 name = 'InstallPythonBuilder')
+            action=installpython_action,
+            src_suffix="$CPYTHON_SUFFIX",
+            target_factory=env.fs.Entry,
+            source_factory=env.fs.Entry,
+            multi=1,
+            emitter=[add_targets_to_INSTALLED_FILES],
+            name="InstallPythonBuilder",
+        )
 
     return PythonInstallBuilder
+
 
 def InstallPython(env, target=None, source=None, dir=None, **kw):
     """InstallPython creates .pyc or .pyo files for .py source files
@@ -82,14 +85,19 @@ def InstallPython(env, target=None, source=None, dir=None, **kw):
     """
 
     if target and dir:
-        raise SCons.Errors.UserError, "Both target and dir defined for InstallPython(), only one may be defined."
+        raise SCons.Errors.UserError(
+            "Both target and dir defined for InstallPython(), only one may be defined."
+        )
     if not dir:
-        dir=target
-    
+        dir = target
+
     try:
         dnodes = env.arg2nodes(dir, env.fs.Dir)
     except TypeError:
-        raise SCons.Errors.UserError, "Target `%s' of Install() is a file, but should be a directory.  Perhaps you have the InstallPython() arguments backwards?" % str(dir)
+        raise SCons.Errors.UserError(
+            "Target `%s' of Install() is a file, but should be a directory.  Perhaps you have the InstallPython() arguments backwards?"
+            % str(dir)
+        )
 
     sources = env.arg2nodes(source, env.fs.Entry)
     tgt = []
@@ -97,29 +105,30 @@ def InstallPython(env, target=None, source=None, dir=None, **kw):
     try:
         import py_compile
     except ImportError:
-        raise SCons.Errors.InternalError, "Couldn't import py_compile module"
+        raise SCons.Errors.InternalError("Couldn't import py_compile module")
 
     # import `compileall` module only if there is a dir in sources list
     import SCons.Node
+
     dir_in_sources = [isinstance(i, SCons.Node.FS.Dir) for i in sources]
     if True in dir_in_sources:
         try:
             import compileall
         except ImportError:
-            raise SCons.Errors.InternalError, "Couldn't import compileall module"
+            raise SCons.Errors.InternalError("Couldn't import compileall module")
         import glob
 
     compile_pyc = True
     try:
-        if int(env.subst('$CPYTHON_PYC')) == 0:
+        if int(env.subst("$CPYTHON_PYC")) == 0:
             compile_pyc = False
     except ValueError:
         pass
 
     if compile_pyc:
-        CPYTHON_TARGETSUFFIX = 'c'
+        CPYTHON_TARGETSUFFIX = "c"
     else:
-        CPYTHON_TARGETSUFFIX = 'o'
+        CPYTHON_TARGETSUFFIX = "o"
 
     PIB = PythonInstallBuilder
 
@@ -127,36 +136,38 @@ def InstallPython(env, target=None, source=None, dir=None, **kw):
         for src in sources:
             # add *.py and *.pyc files from a directory to tgt list
             if isinstance(src, SCons.Node.FS.Dir) and compile_pyc:
-                compileall.compile_dir(str(src), maxlevels = 0, quiet = 1)
-                globpath = src.path + os.sep + '*.py'
-                py_and_pycs = glob.glob(globpath) + glob.glob(globpath+'c')
+                compileall.compile_dir(str(src), maxlevels=0, quiet=1)
+                globpath = src.path + os.sep + "*.py"
+                py_and_pycs = glob.glob(globpath) + glob.glob(globpath + "c")
                 for filename in py_and_pycs:
-                    target = env.fs.Entry('.'+os.sep+filename, dnode)
-                    tgt.extend(apply(PIB, (env, target, filename), kw))
+                    target = env.fs.Entry("." + os.sep + filename, dnode)
+                    tgt.extend(PIB(*(env, target, filename), **kw))
             # add *.py and *.pyo files from a directory to tgt list
             elif isinstance(src, SCons.Node.FS.Dir):
                 to_compile = []
-                py_files = glob.glob(src.path + os.sep + '*.py')
+                py_files = glob.glob(src.path + os.sep + "*.py")
                 for py_file in py_files:
                     to_compile.append(py_file)
-                    target_path = '.' + os.sep + py_file
+                    target_path = "." + os.sep + py_file
 
                     # add '.py' file to tgt list
                     py_src = env.fs.Entry(py_file)
                     py_tgt = env.fs.Entry(target_path, dnode)
-                    tgt.extend(apply(PIB, (env, py_tgt, py_src), kw))
+                    tgt.extend(PIB(*(env, py_tgt, py_src), **kw))
 
                     # add '.pyo' file to tgt list
                     pyo_src = env.fs.Entry(py_file + CPYTHON_TARGETSUFFIX)
                     pyo_tgt = env.fs.Entry(target_path + CPYTHON_TARGETSUFFIX, dnode)
-                    tgt.extend(apply(PIB, (env, pyo_tgt, pyo_src), kw))
-                act = SCons.Action.CommandAction('@$CPYTHON_PYCOM %s' % (' '.join(to_compile)))
+                    tgt.extend(PIB(*(env, pyo_tgt, pyo_src), **kw))
+                act = SCons.Action.CommandAction(
+                    "@$CPYTHON_PYCOM %s" % (" ".join(to_compile))
+                )
                 act([], [], env)
             # add single '.py' and '.pyc' or '.pyo' file to tgt list
             else:
                 # add '.py' file to tgt list
-                target = env.fs.Entry('.'+os.sep+src.path, dnode)
-                tgt.extend(apply(PIB, (env, target, src), kw))
+                target = env.fs.Entry("." + os.sep + src.path, dnode)
+                tgt.extend(PIB(*(env, target, src), **kw))
 
                 # .pyc or .pyo source and target files
                 pyco_src = env.fs.Entry(src.path + CPYTHON_TARGETSUFFIX)
@@ -165,41 +176,36 @@ def InstallPython(env, target=None, source=None, dir=None, **kw):
                 if compile_pyc:
                     py_compile.compile(src.path)
                 else:
-                    act = SCons.Action.CommandAction('@$CPYTHON_PYCOM %s' % (src.path))
+                    act = SCons.Action.CommandAction("@$CPYTHON_PYCOM %s" % (src.path))
                     act([], [], env)
 
                 # add '.pyc' or '.pyo' file to tgt list
-                tgt.extend(apply(PIB, (env, pyco_tgt, pyco_src), kw))
+                tgt.extend(PIB(*(env, pyco_tgt, pyco_src), **kw))
 
     return tgt
+
 
 def generate(env):
     from SCons.Tool.install import copyFunc
 
     try:
-        env['INSTALL']
+        env["INSTALL"]
     except KeyError:
-        env['INSTALL'] = copyFunc
+        env["INSTALL"] = copyFunc
 
     global PythonInstallBuilder
     PythonInstallBuilder = createPythonBuilder(env)
 
-    env['CPYTHON_PYC'] = 1 # generate '.pyc' files by default
+    env["CPYTHON_PYC"] = 1  # generate '.pyc' files by default
 
-    env['CPYTHON_EXE'] = 'python'
-    env['CPYTHON_PYO_FLAGS'] = '-O'
-    env['CPYTHON_PYO_CMD'] = "-c 'import sys,py_compile; [py_compile.compile(i) for i in sys.argv[1:]]'"
-    env['CPYTHON_PYCOM'] = '$CPYTHON_EXE $CPYTHON_PYO_FLAGS $CPYTHON_PYO_CMD'
-    env['CPYTHON_PYCOMSTR'] = 'Install file: "$SOURCE" as "$TARGET"'
+    env["CPYTHON_EXE"] = "python"
+    env["CPYTHON_PYO_FLAGS"] = "-O"
+    env["CPYTHON_PYO_CMD"] = "-c 'import sys,py_compile; [py_compile.compile(i) for i in sys.argv[1:]]'"
+    env["CPYTHON_PYCOM"] = "$CPYTHON_EXE $CPYTHON_PYO_FLAGS $CPYTHON_PYO_CMD"
+    env["CPYTHON_PYCOMSTR"] = 'Install file: "$SOURCE" as "$TARGET"'
+    env["CPYTHON_SUFFIX"] = ".py"  # extension for Python source files
+    env.AddMethod(InstallPython, "InstallPython")
 
-    env['CPYTHON_SUFFIX'] = '.py' # extension for Python source files
-    
-    try:
-        env.AddMethod(InstallPython, "InstallPython")
-    except AttributeError:
-        # Looks like we use a pre-0.98 version of SCons...
-        from SCons.Script.SConscript import SConsEnvironment
-        SConsEnvironment.InstallPython = InstallPython
 
 def exists(env):
     return 1
