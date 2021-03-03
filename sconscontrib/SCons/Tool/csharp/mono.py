@@ -33,24 +33,26 @@ import SCons.Action
 csccom = "$CSC $CSCFLAGS -out:${TARGET.abspath} $SOURCES"
 csclibcom = "$CSC -t:library $CSCLIBFLAGS $_CSCLIBPATH $_CSCLIBS -out:${TARGET.abspath} $SOURCES"
 
-McsBuilder = SCons.Builder.Builder(action = '$CSCCOM',
-                                   source_factory = SCons.Node.FS.default_fs.Entry,
-                                   suffix = '.exe')
+McsBuilder = SCons.Builder.Builder(
+    action="$CSCCOM", source_factory=SCons.Node.FS.default_fs.Entry, suffix=".exe"
+)
 
-McsLibBuilder = SCons.Builder.Builder(action = '$CSCLIBCOM',
-                                      source_factory = SCons.Node.FS.default_fs.Entry,
-                                      suffix = '.dll')
+McsLibBuilder = SCons.Builder.Builder(
+    action="$CSCLIBCOM", source_factory=SCons.Node.FS.default_fs.Entry, suffix=".dll"
+)
+
 
 def generate(env):
-    env['BUILDERS']['CLIProgram'] = McsBuilder
-    env['BUILDERS']['CLILibrary'] = McsLibBuilder
+    env["BUILDERS"]["CLIProgram"] = McsBuilder
+    env["BUILDERS"]["CLILibrary"] = McsLibBuilder
 
-    env['CSC']        = 'gmcs'
-    env['_CSCLIBS']    = "${_stripixes('-r:', CILLIBS, '', '-r', '', __env__)}"
-    env['_CSCLIBPATH'] = "${_stripixes('-lib:', CILLIBPATH, '', '-r', '', __env__)}"
-    env['CSCFLAGS']   = SCons.Util.CLVar('')
-    env['CSCCOM']     = SCons.Action.Action(csccom)
-    env['CSCLIBCOM']  = SCons.Action.Action(csclibcom)
+    env["CSC"] = "gmcs"
+    env["_CSCLIBS"] = "${_stripixes('-r:', CILLIBS, '', '-r', '', __env__)}"
+    env["_CSCLIBPATH"] = "${_stripixes('-lib:', CILLIBPATH, '', '-r', '', __env__)}"
+    env["CSCFLAGS"] = SCons.Util.CLVar("")
+    env["CSCCOM"] = SCons.Action.Action(csccom)
+    env["CSCLIBCOM"] = SCons.Action.Action(csclibcom)
+
 
 def exists(env):
-    return internal_zip or env.Detect('mcs')
+    return internal_zip or env.Detect("mcs")
