@@ -101,9 +101,7 @@ def ProC(env, target, source=None, *args, **kw):
 
 def generate(env):
     """ Add Builders and construction variables to the Environment. """
-
     # print("TRACE -- generate(env) called")
-
     env["PRO_C"] = _detect(env)
 
     env.SetDefault(
@@ -128,5 +126,5 @@ def generate(env):
 
 
 def exists(env):
-    #    print "TRACE -- exists(env) called"
+    #  print("TRACE -- exists(env) called")
     return _detect(env)
