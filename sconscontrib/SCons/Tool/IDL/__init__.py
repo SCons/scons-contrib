@@ -41,7 +41,7 @@ SCons.Warnings.enableWarningClass(ToolIDLWarning)
 
 def _detect(env):
     """ Try to detect the idl pre-compiler """
-    #    print "TRACE -- _detect(env) called"
+    # print("TRACE -- _detect(env) called")
 
     try:
         return "%s/bin/idl" % (os.environ["ORBIX_ROOT"])
@@ -71,7 +71,7 @@ def IDL(env, target, source=None, *args, **kw):
     A pseudo-Builder wrapper for the Orbix idl pre-compiler.
         IDL [options]
     """
-    #    print "TRACE -- IDL(env, target, source, *args) called"
+    # print("TRACE -- IDL(env, target, source, *args) called")
 
     if not SCons.Util.is_List(target):
         target = [target]
