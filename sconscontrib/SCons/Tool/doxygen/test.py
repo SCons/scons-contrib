@@ -22,11 +22,11 @@
 import unittest
 import os
 import sys
-from doxygen import DoxyfileParse
+from .doxygen import DoxyfileParse
 
 
 class TestParser(unittest.TestCase):
-    test_config_dir = os.path.join(os.path.dirname(__file__), 'test_config')
+    test_config_dir = os.path.join(os.path.dirname(__file__), "test_config")
 
     def test_simple_parse(self):
         text = """
@@ -45,13 +45,14 @@ INPUT  = test.h
         text = """@INCLUDE=include_test.cfg"""
         result = DoxyfileParse(text, self.test_config_dir)
         self.assertEqual(["abc"], result["INPUT"])
-        self.assertEqual([os.path.join(self.test_config_dir, "include_test.cfg")],
-                         result["@INCLUDE"])
+        self.assertEqual(
+            [os.path.join(self.test_config_dir, "include_test.cfg")], result["@INCLUDE"]
+        )
 
     def test_recursive_include_tag(self):
         text = """@INCLUDE=recursive_include_test.cfg"""
         self.assertRaises(Exception, DoxyfileParse, text, self.test_config_dir)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

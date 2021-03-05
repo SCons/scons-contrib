@@ -28,6 +28,7 @@ import os
 import os.path
 import glob
 from fnmatch import fnmatch
+from functools import reduce
 
 # Currently supported output formats and their default
 # values and output locations.
@@ -55,6 +56,7 @@ def DoxyfileParse(file_contents, conf_dir, data=None):
         data = {}
 
     import shlex
+
     lex = shlex.shlex(instream=file_contents, posix=True)
     lex.wordchars += "*+./-:@"
     lex.whitespace = lex.whitespace.replace("\n", "")
@@ -75,10 +77,10 @@ def DoxyfileParse(file_contents, conf_dir, data=None):
             data[key][-1] += token
 
     while token:
-        if token in ['\n']:
-            if last_token not in ['\\']:
+        if token in ["\n"]:
+            if last_token not in ["\\"]:
                 key_token = True
-        elif token in ['\\']:
+        elif token in ["\\"]:
             pass
         elif key_token:
             key = token
@@ -105,7 +107,7 @@ def DoxyfileParse(file_contents, conf_dir, data=None):
                 if nextfile in data[key]:
                     raise Exception("recursive @INCLUDE in Doxygen config: " + nextfile)
                 data[key].append(nextfile)
-                fh = open(nextfile, 'r')
+                fh = open(nextfile, "r")
                 DoxyfileParse(fh.read(), conf_dir, data)
                 fh.close()
             else:
@@ -115,12 +117,12 @@ def DoxyfileParse(file_contents, conf_dir, data=None):
         last_token = token
         token = lex.get_token()
 
-        if last_token == '\\' and token != '\n':
+        if last_token == "\\" and token != "\n":
             new_data = False
-            append_data(data, key, new_data, '\\')
+            append_data(data, key, new_data, "\\")
 
     # compress lists of len 1 into single strings
-    for (k, v) in data.items():
+    for (k, v) in list(data.items()):
         if len(v) == 0:
             data.pop(k)
 
@@ -140,14 +142,35 @@ def DoxySourceFiles(node, env):
     any files used to generate docs to the list of source files.
     """
     default_file_patterns = [
-        '*.c', '*.cc', '*.cxx', '*.cpp', '*.c++', '*.java', '*.ii', '*.ixx',
-        '*.ipp', '*.i++', '*.inl', '*.h', '*.hh ', '*.hxx', '*.hpp', '*.h++',
-        '*.idl', '*.odl', '*.cs', '*.php', '*.php3', '*.inc', '*.m', '*.mm',
-        '*.py',
+        "*.c",
+        "*.cc",
+        "*.cxx",
+        "*.cpp",
+        "*.c++",
+        "*.java",
+        "*.ii",
+        "*.ixx",
+        "*.ipp",
+        "*.i++",
+        "*.inl",
+        "*.h",
+        "*.hh ",
+        "*.hxx",
+        "*.hpp",
+        "*.h++",
+        "*.idl",
+        "*.odl",
+        "*.cs",
+        "*.php",
+        "*.php3",
+        "*.inc",
+        "*.m",
+        "*.mm",
+        "*.py",
     ]
 
     default_exclude_patterns = [
-        '*~',
+        "*~",
     ]
 
     sources = []
@@ -181,8 +204,16 @@ def DoxySourceFiles(node, env):
                         for f in files:
                             filename = os.path.join(root, f)
 
-                            pattern_check = reduce(lambda x, y: x or bool(fnmatch(filename, y)), file_patterns, False)
-                            exclude_check = reduce(lambda x, y: x and fnmatch(filename, y), exclude_patterns, True)
+                            pattern_check = reduce(
+                                lambda x, y: x or bool(fnmatch(filename, y)),
+                                file_patterns,
+                                False,
+                            )
+                            exclude_check = reduce(
+                                lambda x, y: x and fnmatch(filename, y),
+                                exclude_patterns,
+                                True,
+                            )
 
                             if pattern_check and not exclude_check:
                                 sources.append(filename)
@@ -192,12 +223,18 @@ def DoxySourceFiles(node, env):
     else:
         # No INPUT specified, so apply plain patterns only
         if recursive:
-            for root, dirs, files in os.walk('.'):
+            for root, dirs, files in os.walk("."):
                 for f in files:
                     filename = os.path.join(root, f)
 
-                    pattern_check = reduce(lambda x, y: x or bool(fnmatch(filename, y)), file_patterns, False)
-                    exclude_check = reduce(lambda x, y: x and fnmatch(filename, y), exclude_patterns, True)
+                    pattern_check = reduce(
+                        lambda x, y: x or bool(fnmatch(filename, y)),
+                        file_patterns,
+                        False,
+                    )
+                    exclude_check = reduce(
+                        lambda x, y: x and fnmatch(filename, y), exclude_patterns, True
+                    )
 
                     if pattern_check and not exclude_check:
                         sources.append(filename)
@@ -219,7 +256,7 @@ def DoxySourceFiles(node, env):
     # Add additional files to the list of source files:
     def append_additional_source(option, formats):
         for f in formats:
-            if data.get('GENERATE_' + f, output_formats[f][0]) == "YES":
+            if data.get("GENERATE_" + f, output_formats[f][0]) == "YES":
                 file = data.get(option, "")
                 if file != "":
                     if not os.path.isabs(file):
@@ -228,9 +265,9 @@ def DoxySourceFiles(node, env):
                         sources.append(file)
                 break
 
-    append_additional_source("HTML_STYLESHEET", ['HTML'])
-    append_additional_source("HTML_HEADER", ['HTML'])
-    append_additional_source("HTML_FOOTER", ['HTML'])
+    append_additional_source("HTML_STYLESHEET", ["HTML"])
+    append_additional_source("HTML_HEADER", ["HTML"])
+    append_additional_source("HTML_FOOTER", ["HTML"])
 
     return sources
 
@@ -241,7 +278,7 @@ def DoxySourceScan(node, env, path):
     any files used to generate docs to the list of source files.
     """
     filepaths = DoxySourceFiles(node, env)
-    sources = map(lambda path: env.File(path), filepaths)
+    sources = [env.File(path) for path in filepaths]
     return sources
 
 
@@ -262,16 +299,16 @@ def DoxyEmitter(target, source, env):
         out_dir = os.path.join(conf_dir, out_dir)
 
     # add our output locations
-    for (k, v) in output_formats.items():
+    for (k, v) in list(output_formats.items()):
         if data.get("GENERATE_" + k, v[0]) == "YES":
             # Initialize output file extension for MAN pages
-            if k == 'MAN':
+            if k == "MAN":
                 # Is the given extension valid?
                 manext = v[3]
                 if v[4] and v[4] in data:
                     manext = data.get(v[4])
                 # Try to strip off dots
-                manext = manext.replace('.', '')
+                manext = manext.replace(".", "")
                 # Can we convert it to an int?
                 try:
                     e = int(manext)
@@ -279,7 +316,9 @@ def DoxyEmitter(target, source, env):
                     # No, so set back to default
                     manext = "3"
 
-                od = env.Dir(os.path.join(out_dir, data.get(k + "_OUTPUT", v[1]), "man" + manext))
+                od = env.Dir(
+                    os.path.join(out_dir, data.get(k + "_OUTPUT", v[1]), "man" + manext)
+                )
             else:
                 od = env.Dir(os.path.join(out_dir, data.get(k + "_OUTPUT", v[1])))
             # don't clobber target folders
@@ -294,7 +333,9 @@ def DoxyEmitter(target, source, env):
                     fname = v[2] + data.get(v[4])
                 else:
                     fname = v[2] + v[3]
-                of = env.File(os.path.join(out_dir, data.get(k + "_OUTPUT", v[1]), fname))
+                of = env.File(
+                    os.path.join(out_dir, data.get(k + "_OUTPUT", v[1]), fname)
+                )
                 targets.append(of)
                 # don't clean single files, we remove the complete output folders (see above)
                 env.NoClean(of)
@@ -306,10 +347,14 @@ def DoxyEmitter(target, source, env):
                 filepaths = DoxySourceFiles(source[0], env)
                 for f in filepaths:
                     if os.path.isfile(f) and f != doxy_fpath:
-                        of = env.File(os.path.join(out_dir,
-                                                   data.get(k + "_OUTPUT", v[1]),
-                                                   "man" + manext,
-                                                   f + "." + manext))
+                        of = env.File(
+                            os.path.join(
+                                out_dir,
+                                data.get(k + "_OUTPUT", v[1]),
+                                "man" + manext,
+                                f + "." + manext,
+                            )
+                        )
                         targets.append(of)
                         # don't clean single files, we remove the complete output folders (see above)
                         env.NoClean(of)
@@ -336,6 +381,7 @@ def generate(env):
     )
 
     import SCons.Builder
+
     doxyfile_builder = SCons.Builder.Builder(
         action="cd ${SOURCE.dir}  &&  ${DOXYGEN} ${SOURCE.file}",
         emitter=DoxyEmitter,
@@ -344,12 +390,14 @@ def generate(env):
         source_scanner=doxyfile_scanner,
     )
 
-    env.Append(BUILDERS={
-        'Doxygen': doxyfile_builder,
-    })
+    env.Append(
+        BUILDERS={
+            "Doxygen": doxyfile_builder,
+        }
+    )
 
     env.AppendUnique(
-        DOXYGEN='doxygen',
+        DOXYGEN="doxygen",
     )
 
 

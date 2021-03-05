@@ -28,19 +28,23 @@ import os
 from SCons.Builder import Builder
 from SCons.Util import CLVar
 
+
 def exists(env):
-    return env.WhereIs('chpl')
+    return env.WhereIs("chpl")
+
 
 def generate(env):
-    env['CHPL'] = 'chpl'
-    env['CHPLFLAGS'] = CLVar('')
-    env['CHPLLINKFLAGS'] = CLVar('')
-    env['CHPLSUFFIX'] = '.chpl'
+    env["CHPL"] = "chpl"
+    env["CHPLFLAGS"] = CLVar("")
+    env["CHPLLINKFLAGS"] = CLVar("")
+    env["CHPLSUFFIX"] = ".chpl"
     chapelBuilder = Builder(
-        action='$CHPL $CHPLFLAGS -o $TARGET $SOURCES',
-        src_suffix=['.chpl'],
-        single_source = False,
-        )
-    env.Append(BUILDERS={
-        'ChapelProgram': chapelBuilder,
-        })
+        action="$CHPL $CHPLFLAGS -o $TARGET $SOURCES",
+        src_suffix=[".chpl"],
+        single_source=False,
+    )
+    env.Append(
+        BUILDERS={
+            "ChapelProgram": chapelBuilder,
+        }
+    )
