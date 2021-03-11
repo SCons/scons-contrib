@@ -1,11 +1,6 @@
-"""SCons.Tool.kotlin
-
-Tool-specific initialization for Kotlin.
-
-"""
-
+# MIT License
 #
-# Copyright (c) 2020 The SCons Foundation
+# Copyright The SCons Foundation
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -25,56 +20,67 @@ Tool-specific initialization for Kotlin.
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#
+
+"""SCons.Tool.kotlin
+
+Tool-specific initialization for Kotlin.
+"""
 
 import SCons.Action
 import SCons.Builder
 import SCons.Util
 
+
 class ToolKotlinWarning(SCons.Warnings.Warning):
     pass
+
 
 class KotlinNotFound(ToolKotlinWarning):
     pass
 
+
 SCons.Warnings.enableWarningClass(ToolKotlinWarning)
+
 
 def _detect(env):
     """ Try to detect the kotlinc binary """
-    try: 
-        return env['kotlinc']
-    except KeyError: 
+    try:
+        return env["kotlinc"]
+    except KeyError:
         pass
 
-    kotlin = env.WhereIs('kotlinc')
+    kotlin = env.WhereIs("kotlinc")
     if kotlin:
         return kotlin
 
-    raise SCons.Errors.StopError(
-        KotlinNotFound,
-        "Could not detect kotlinc executable")
+    raise SCons.Errors.StopError(KotlinNotFound, "Could not detect kotlinc executable")
     return None
+
 
 #
 # Builders
 #
 kotlinc_builder = SCons.Builder.Builder(
-        action = SCons.Action.Action('$KOTLINCCOM','$KOTLINCCOMSTR'),
-                                     suffix='$KOTLINCLASSSUFFIX', 
-                                     src_suffix='$KOTLINSUFFIX', 
-                                     single_source=True) # file by file
+    action=SCons.Action.Action("$KOTLINCCOM", "$KOTLINCCOMSTR"),
+    suffix="$KOTLINCLASSSUFFIX",
+    src_suffix="$KOTLINSUFFIX",
+    single_source=True,
+)  # file by file
 
 kotlin_jar_builder = SCons.Builder.Builder(
-        action = SCons.Action.Action('$KOTLINJARCOM','$KOTLINJARCOMSTR'),
-                                     suffix='$KOTLINJARSUFFIX', 
-                                     src_suffix='$KOTLINSUFFIX', 
-                                     single_source=True) # file by file
+    action=SCons.Action.Action("$KOTLINJARCOM", "$KOTLINJARCOMSTR"),
+    suffix="$KOTLINJARSUFFIX",
+    src_suffix="$KOTLINSUFFIX",
+    single_source=True,
+)  # file by file
 
 kotlin_rtjar_builder = SCons.Builder.Builder(
-        action = SCons.Action.Action('$KOTLINRTJARCOM','$KOTLINRTJARCOMSTR'),
-                                     suffix='$KOTLINJARSUFFIX', 
-                                     src_suffix='$KOTLINSUFFIX', 
-                                     single_source=True) # file by file
+    action=SCons.Action.Action("$KOTLINRTJARCOM", "$KOTLINRTJARCOMSTR"),
+    suffix="$KOTLINJARSUFFIX",
+    src_suffix="$KOTLINSUFFIX",
+    single_source=True,
+)  # file by file
+
 
 def Kotlin(env, target, source=None, *args, **kw):
     """
@@ -89,8 +95,8 @@ def Kotlin(env, target, source=None, *args, **kw):
         source = [source]
 
     result = []
-    kotlinc_suffix = env.subst('$KOTLINCLASSSUFFIX')
-    kotlinc_extension = env.subst('$KOTLINEXTENSION')
+    kotlinc_suffix = env.subst("$KOTLINCLASSSUFFIX")
+    kotlinc_extension = env.subst("$KOTLINEXTENSION")
     for t, s in zip(target, source):
         t_ext = t
         if not t.endswith(kotlinc_suffix):
@@ -105,6 +111,7 @@ def Kotlin(env, target, source=None, *args, **kw):
         result.extend(kotlin_class)
 
     return result
+
 
 def KotlinJar(env, target, source=None, *args, **kw):
     """
@@ -126,6 +133,7 @@ def KotlinJar(env, target, source=None, *args, **kw):
 
     return result
 
+
 def KotlinRuntimeJar(env, target, source=None, *args, **kw):
     """
     A pseudo-Builder wrapper for creating standalone JAR files with the kotlinc executable.
@@ -146,32 +154,33 @@ def KotlinRuntimeJar(env, target, source=None, *args, **kw):
 
     return result
 
+
 def generate(env):
     """Add Builders and construction variables for kotlinc to an Environment."""
 
-    env['KOTLINC'] = _detect(env)
+    env["KOTLINC"] = _detect(env)
 
     env.SetDefault(
-        KOTLINC = 'kotlinc',
-        KOTLINSUFFIX = '.kt',
-        KOTLINEXTENSION = 'Kt',
-        KOTLINCLASSSUFFIX = '.class',
-        KOTLINJARSUFFIX = '.jar',
-        KOTLINCFLAGS = SCons.Util.CLVar(),
-        KOTLINJARFLAGS = SCons.Util.CLVar(),
-        KOTLINRTJARFLAGS = SCons.Util.CLVar(['-include-runtime']),
-        KOTLINCCOM = '$KOTLINC $KOTLINCFLAGS $SOURCE',
-        KOTLINCCOMSTR = '',
-        KOTLINJARCOM = '$KOTLINC $KOTLINJARFLAGS -d $TARGET $SOURCE',
-        KOTLINJARCOMSTR = '',
-        KOTLINRTJARCOM = '$KOTLINC $KOTLINRTJARFLAGS -d $TARGET $SOURCE',
-        KOTLINRTJARCOMSTR = '',
-        )
+        KOTLINC="kotlinc",
+        KOTLINSUFFIX=".kt",
+        KOTLINEXTENSION="Kt",
+        KOTLINCLASSSUFFIX=".class",
+        KOTLINJARSUFFIX=".jar",
+        KOTLINCFLAGS=SCons.Util.CLVar(),
+        KOTLINJARFLAGS=SCons.Util.CLVar(),
+        KOTLINRTJARFLAGS=SCons.Util.CLVar(["-include-runtime"]),
+        KOTLINCCOM="$KOTLINC $KOTLINCFLAGS $SOURCE",
+        KOTLINCCOMSTR="",
+        KOTLINJARCOM="$KOTLINC $KOTLINJARFLAGS -d $TARGET $SOURCE",
+        KOTLINJARCOMSTR="",
+        KOTLINRTJARCOM="$KOTLINC $KOTLINRTJARFLAGS -d $TARGET $SOURCE",
+        KOTLINRTJARCOMSTR="",
+    )
 
     env.AddMethod(Kotlin, "Kotlin")
     env.AddMethod(KotlinJar, "KotlinJar")
     env.AddMethod(KotlinRuntimeJar, "KotlinRuntimeJar")
 
+
 def exists(env):
     return _detect(env)
-
