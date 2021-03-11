@@ -39,7 +39,8 @@ import SCons.Util
 
 try:
     import locale
-    locale.setlocale(locale.LC_ALL, '')
+
+    locale.setlocale(locale.LC_ALL, "")
 except:
     pass
 
@@ -62,14 +63,17 @@ def rst2something(target, source, env, validOptions, writer):
     settings = dict([item for item in env.items() if item[0] in validOptions])
 
     # stylesheet and stylesheet_path are mutually exclusive
-    if 'stylesheet' in settings:
-        settings['stylesheet_path'] = None
+    if "stylesheet" in settings:
+        settings["stylesheet_path"] = None
 
     for i in range(len(source)):
-        publish_file(source_path=source[i].path,
-                     destination_path=target[i].path,
-                     writer_name=writer,
-                     settings_overrides=settings)
+        publish_file(
+            source_path=source[i].path,
+            destination_path=target[i].path,
+            writer_name=writer,
+            settings_overrides=settings,
+        )
+
 
 #
 # Warnings
@@ -77,8 +81,10 @@ def rst2something(target, source, env, validOptions, writer):
 class ToolReSTWarning(SCons.Warnings.Warning):
     pass
 
+
 class ReSTNotFound(ToolReSTWarning):
     pass
+
 
 SCons.Warnings.enableWarningClass(ToolReSTWarning)
 
@@ -87,27 +93,28 @@ SCons.Warnings.enableWarningClass(ToolReSTWarning)
 #
 def _detect(env):
     """ Try to detect the ReST command line tools, here rst2html """
-    rest = env.WhereIs('rst2html')
+    rest = env.WhereIs("rst2html")
     if rest:
         return rest
 
-    raise SCons.Errors.StopError(
-        ReSTNotFound,
-        "Could not detect ReST builder")
+    raise SCons.Errors.StopError(ReSTNotFound, "Could not detect ReST builder")
     return None
+
 
 #
 # Actions
 #
 def rst2latex(target, source, env):
-    options = ['stylesheet', 'embed_stylesheet']
-    rst2something(target, source, env, options, 'latex')
+    options = ["stylesheet", "embed_stylesheet"]
+    rst2something(target, source, env, options, "latex")
     return None
 
+
 def rst2html(target, source, env):
-    options = ['stylesheet', 'embed_stylesheet']
-    rst2something(target, source, env, options, 'html4css1')
+    options = ["stylesheet", "embed_stylesheet"]
+    rst2something(target, source, env, options, "html4css1")
     return None
+
 
 def rst2odt(target, source, env):
     if not has_docutils:
@@ -116,26 +123,27 @@ def rst2odt(target, source, env):
     writer = Writer()
     reader = Reader()
     for i in range(len(source)):
-        publish_cmdline_to_binary(reader=reader, writer=writer, argv=[str(source[i]), str(target[i])])
+        publish_cmdline_to_binary(
+            reader=reader, writer=writer, argv=[str(source[i]), str(target[i])]
+        )
     return None
+
 
 #
 # Builders
 #
 __rest_latexbuilder = SCons.Builder.Builder(
-        action = rst2latex,
-        suffix = '$REST_LATEXSUFFIX',
-        src_suffix = '$REST_SUFFIX')
+    action=rst2latex, suffix="$REST_LATEXSUFFIX", src_suffix="$REST_SUFFIX"
+)
 
 __rest_htmlbuilder = SCons.Builder.Builder(
-        action = rst2html,
-        suffix = '$REST_HTMLSUFFIX',
-        src_suffix = '$REST_SUFFIX')
+    action=rst2html, suffix="$REST_HTMLSUFFIX", src_suffix="$REST_SUFFIX"
+)
 
 __rest_odtbuilder = SCons.Builder.Builder(
-        action = rst2odt,
-        suffix = '$REST_ODTSUFFIX',
-        src_suffix = '$REST_SUFFIX')
+    action=rst2odt, suffix="$REST_ODTSUFFIX", src_suffix="$REST_SUFFIX"
+)
+
 
 def Rst2Latex(env, target, source=None, *args, **kw):
     """
@@ -160,6 +168,7 @@ def Rst2Latex(env, target, source=None, *args, **kw):
 
     return result
 
+
 def Rst2Html(env, target, source=None, *args, **kw):
     """
     A pseudo-Builder wrapper for ReST->HTML.
@@ -182,6 +191,7 @@ def Rst2Html(env, target, source=None, *args, **kw):
         result.extend(__rest_htmlbuilder.__call__(env, t, s, **kw))
 
     return result
+
 
 def Rst2Odt(env, target, source=None, *args, **kw):
     """
@@ -206,16 +216,17 @@ def Rst2Odt(env, target, source=None, *args, **kw):
 
     return result
 
+
 def generate(env):
     """Add Builders and construction variables to the Environment."""
 
     env.SetDefault(
         # Suffixes/prefixes
-        REST_SUFFIX = '.rst',
-        REST_LATEXSUFFIX = '.ltx',
-        REST_HTMLSUFFIX = '.html',
-        REST_ODTSUFFIX = '.odt',
-        )
+        REST_SUFFIX=".rst",
+        REST_LATEXSUFFIX=".ltx",
+        REST_HTMLSUFFIX=".html",
+        REST_ODTSUFFIX=".odt",
+    )
 
     try:
         env.AddMethod(Rst2Latex, "Rst2Latex")
@@ -224,10 +235,11 @@ def generate(env):
     except AttributeError:
         # Looks like we use a pre-0.98 version of SCons...
         from SCons.Script.SConscript import SConsEnvironment
+
         SConsEnvironment.Rst2Latex = Rst2Latex
         SConsEnvironment.Rst2Html = Rst2Html
         SConsEnvironment.Rst2Odt = Rst2Odt
 
+
 def exists(env):
     return _detect(env)
-
