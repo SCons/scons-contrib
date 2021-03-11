@@ -31,22 +31,25 @@ import SCons.Action
 import SCons.Builder
 import SCons.Util
 
+
 class ToolNowebWarning(SCons.Warnings.Warning):
     pass
+
 
 class NowebNotFound(ToolNowebWarning):
     pass
 
+
 SCons.Warnings.enableWarningClass(ToolNowebWarning)
 
-noweb_env = {'noweave' : 'NOWEAVE',
-             'notangle' : 'NOTANGLE'}
+noweb_env = {"noweave": "NOWEAVE", "notangle": "NOTANGLE"}
+
 
 def _detect(env, key):
     """ Try to detect the noweave/notangle binary """
-    try: 
+    try:
         return env[noweb_env[key]]
-    except KeyError: 
+    except KeyError:
         pass
 
     noweb = env.WhereIs(key)
@@ -54,52 +57,61 @@ def _detect(env, key):
         return noweb
 
     raise SCons.Errors.StopError(
-        NowebNotFound,
-        "Could not detect noweave/notangle executable")
+        NowebNotFound, "Could not detect noweave/notangle executable"
+    )
     return None
+
 
 #
 # Builders
 #
 noweave_builder = SCons.Builder.Builder(
-        action = SCons.Action.Action('$NOWEAVECOM','$NOWEAVECOMSTR'),
-                                     src_suffix='.nw', 
-                                     single_source=True) # file by file
+    action=SCons.Action.Action("$NOWEAVECOM", "$NOWEAVECOMSTR"),
+    src_suffix=".nw",
+    single_source=True,
+)  # file by file
 
 noweave_html_builder = SCons.Builder.Builder(
-        action = SCons.Action.Action('$NOWEAVEHTMLCOM','$NOWEAVEHTMLCOMSTR'),
-                                     src_suffix='.nw', 
-                                     single_source=True) # file by file
+    action=SCons.Action.Action("$NOWEAVEHTMLCOM", "$NOWEAVEHTMLCOMSTR"),
+    src_suffix=".nw",
+    single_source=True,
+)  # file by file
 
 notangle_builder = SCons.Builder.Builder(
-        action = SCons.Action.Action('$NOTANGLECOM','$NOTANGLECOMSTR'),
-                                     src_suffix='.nw', 
-                                     single_source=True) # file by file
+    action=SCons.Action.Action("$NOTANGLECOM", "$NOTANGLECOMSTR"),
+    src_suffix=".nw",
+    single_source=True,
+)  # file by file
+
 
 def generate(env):
     """Add Builders and construction variables for noweb to an Environment."""
 
-    env['NOTANGLE'] = _detect(env, 'notangle')
-    env['NOWEAVE'] = _detect(env, 'noweave')
+    env["NOTANGLE"] = _detect(env, "notangle")
+    env["NOWEAVE"] = _detect(env, "noweave")
 
     env.SetDefault(
-        NOWEAVE = 'noweave',
-        NOTANGLE = 'notangle',
-        NOWEAVEFLAGS = SCons.Util.CLVar(),
-        NOWEAVEHTMLFLAGS = SCons.Util.CLVar(['-filter', 'l2h', '-index', '-html']),
-        NOTANGLEFLAGS = SCons.Util.CLVar(),
-        NOWEAVECOM = '$NOWEAVE $NOWEAVEFLAGS $SOURCE > $TARGET',
-        NOWEAVECOMSTR = '',
-        NOWEAVEHTMLCOM = '$NOWEAVE $NOWEAVEHTMLFLAGS $SOURCE > $TARGET',
-        NOWEAVEHTMLCOMSTR = '',
-        NOTANGLECOM = '$NOTANGLE $NOTANGLEFLAGS -R$TARGET $SOURCE > $TARGET',
-        NOTANGLECOMSTR = '',
-        )
+        NOWEAVE="noweave",
+        NOTANGLE="notangle",
+        NOWEAVEFLAGS=SCons.Util.CLVar(),
+        NOWEAVEHTMLFLAGS=SCons.Util.CLVar(["-filter", "l2h", "-index", "-html"]),
+        NOTANGLEFLAGS=SCons.Util.CLVar(),
+        NOWEAVECOM="$NOWEAVE $NOWEAVEFLAGS $SOURCE > $TARGET",
+        NOWEAVECOMSTR="",
+        NOWEAVEHTMLCOM="$NOWEAVE $NOWEAVEHTMLFLAGS $SOURCE > $TARGET",
+        NOWEAVEHTMLCOMSTR="",
+        NOTANGLECOM="$NOTANGLE $NOTANGLEFLAGS -R$TARGET $SOURCE > $TARGET",
+        NOTANGLECOMSTR="",
+    )
 
-    env.Append(BUILDERS = {'Noweave' : noweave_builder,
-                           'NoweaveHtml' : noweave_html_builder,
-                           'Notangle' : notangle_builder})
+    env.Append(
+        BUILDERS={
+            "Noweave": noweave_builder,
+            "NoweaveHtml": noweave_html_builder,
+            "Notangle": notangle_builder,
+        }
+    )
+
 
 def exists(env):
-    return _detect(env, 'noweave')
-
+    return _detect(env, "noweave")
