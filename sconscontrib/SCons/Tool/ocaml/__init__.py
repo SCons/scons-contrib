@@ -56,7 +56,7 @@ def when_code(env, bytecode, native, toplevel=None):
     elif env["OCAML_CODE"] == "toplevel":
         r = toplevel
     else:
-        print "$OCAML_CODE must be either 'toplevel', 'bytecode' or 'native'"
+        print("$OCAML_CODE must be either 'toplevel', 'bytecode' or 'native'")
         env.Exit(1)
     return r
 
@@ -132,7 +132,7 @@ def norm_suffix(f, suffix):
 
 
 def norm_suffix_list(files, suffix):
-    return map(lambda x: norm_suffix(x, suffix), files)
+    return [norm_suffix(x, suffix) for x in files]
 
 
 def find_packages(env):
@@ -142,7 +142,7 @@ def find_packages(env):
     packs = env.Split(env["OCAML_PACKS"])
     if not is_installed(env["OCAMLFIND"]):
         if len(packs):
-            print "Warning: ocamlfind not found, ignoring ocaml packages"
+            print("Warning: ocamlfind not found, ignoring ocaml packages")
         return ""
     s = "%s query %%s -separator ' ' %s" % (env["OCAMLFIND"], " ".join(packs))
     i = read_command(s % "-i-format")
@@ -154,7 +154,7 @@ def find_packages(env):
 
 
 def cleaner(files, env, lib=False):
-    files = map(str, files)
+    files = list(map(str, files))
     r = []
     for f in files:
         r.append(obj_of_src(f, env))
@@ -206,7 +206,7 @@ def command_gen(source, target, env, comp, flags):
     objs = " ".join(objs)
     libs = norm_suffix_list(env["OCAML_LIBS"], lib_suffix(env))
     libs = " ".join(libs)
-    inc = map(lambda x: "-I " + x, env["OCAML_PATH"])
+    inc = ["-I " + x for x in env["OCAML_PATH"]]
     inc = " ".join(inc) + find_packages(env)
     s = "%s %s -o %s %s %s %s $SOURCES" % (comp, flags, target, inc, libs, objs)
     return s
