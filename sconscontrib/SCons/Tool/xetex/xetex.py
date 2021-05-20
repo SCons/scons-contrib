@@ -47,15 +47,18 @@ XETEXBuilder = None
 XeLaTeXAction = None
 XELATEXBuilder = None
 
-def XeLaTeXAuxFunction(target = None, source= None, env=None):
-    result = SCons.Tool.tex.InternalLaTeXAuxAction( XeLaTeXAction, target, source, env )
+
+def XeLaTeXAuxFunction(target=None, source=None, env=None):
+    result = SCons.Tool.tex.InternalLaTeXAuxAction(XeLaTeXAction, target, source, env)
     if result != 0:
         SCons.Tool.tex.check_file_error_message(env['XELATEX'])
     return result
 
+
 XeLaTeXAuxAction = None
 
-def XeTeXLaTeXStrFunction(target = None, source= None, env=None):
+
+def XeTeXLaTeXStrFunction(target=None, source=None, env=None):
     """A strfunction for TeX and LaTeX that scans the source file to
     decide the "flavor" of the source and then returns the appropriate
     command string."""
@@ -65,32 +68,35 @@ def XeTeXLaTeXStrFunction(target = None, source= None, env=None):
         basedir = os.path.split(str(source[0]))[0]
         abspath = os.path.abspath(basedir)
 
-        if is_LaTeX(source,env,abspath):
-            result = env.subst('$XELATEXCOM',0,target,source)+" ..."
+        if is_LaTeX(source, env, abspath):
+            result = env.subst('$XELATEXCOM', 0, target, source) + " ..."
         else:
-            result = env.subst("$XETEXCOM",0,target,source)+" ..."
+            result = env.subst("$XETEXCOM", 0, target, source) + " ..."
     else:
         result = ''
     return result
 
-def XeTeXLaTeXFunction(target = None, source= None, env=None):
+
+def XeTeXLaTeXFunction(target=None, source=None, env=None):
     """A builder for XeTeX and XeLaTeX that scans the source file to
     decide the "flavor" of the source and then executes the appropriate
     program."""
     basedir = os.path.split(str(source[0]))[0]
     abspath = os.path.abspath(basedir)
 
-    if SCons.Tool.tex.is_LaTeX(source,env,abspath):
-        result = XeLaTeXAuxAction(target,source,env)
+    if SCons.Tool.tex.is_LaTeX(source, env, abspath):
+        result = XeLaTeXAuxAction(target, source, env)
         if result != 0:
             SCons.Tool.tex.check_file_error_message(env['XELATEX'])
     else:
-        result = XeTeXAction(target,source,env)
+        result = XeTeXAction(target, source, env)
         if result != 0:
             SCons.Tool.tex.check_file_error_message(env['XETEX'])
     return result
 
+
 XeTeXLaTeXAction = None
+
 
 def generate(env):
     """Add Builders and construction variables for latex to an Environment."""
@@ -100,8 +106,9 @@ def generate(env):
 
     global XeTeXLaTeXAction
     if XeTeXLaTeXAction is None:
-        XeTeXLaTeXAction = SCons.Action.Action(XeTeXLaTeXFunction,
-                              strfunction=XeTeXLaTeXStrFunction)
+        XeTeXLaTeXAction = SCons.Action.Action(
+            XeTeXLaTeXFunction, strfunction=XeTeXLaTeXStrFunction
+        )
 
     global XeLaTeXAction
     if XeLaTeXAction is None:
@@ -109,8 +116,9 @@ def generate(env):
 
     global XeLaTeXAuxAction
     if XeLaTeXAuxAction is None:
-        XeLaTeXAuxAction = SCons.Action.Action(XeLaTeXAuxFunction,
-                              strfunction=XeTeXLaTeXStrFunction)
+        XeLaTeXAuxAction = SCons.Action.Action(
+            XeLaTeXAuxFunction, strfunction=XeTeXLaTeXStrFunction
+        )
 
     env.AppendUnique(LATEXSUFFIXES=SCons.Tool.LaTeXSuffixes)
 
@@ -119,13 +127,15 @@ def generate(env):
     except KeyError:
         global XETEXBuilder
         if XETEXBuilder is None:
-            XETEXBuilder = SCons.Builder.Builder(action = {},
-                                                 source_scanner = SCons.Tool.PDFLaTeXScanner,
-                                                 prefix = '$XETEXPREFIX',
-                                                 suffix = '$XETEXSUFFIX',
-                                                 emitter = {},
-                                                 source_ext_match = None,
-                                                 single_source=True)
+            XETEXBuilder = SCons.Builder.Builder(
+                action={},
+                source_scanner=SCons.Tool.PDFLaTeXScanner,
+                prefix='$XETEXPREFIX',
+                suffix='$XETEXSUFFIX',
+                emitter={},
+                source_ext_match=None,
+                single_source=True,
+            )
         env['BUILDERS']['XETEX'] = XETEXBuilder
 
     try:
@@ -133,13 +143,15 @@ def generate(env):
     except KeyError:
         global XELATEXBuilder
         if XELATEXBuilder is None:
-            XELATEXBuilder = SCons.Builder.Builder(action = {},
-                                                   source_scanner = SCons.Tool.PDFLaTeXScanner,
-                                                   prefix = '$XELATEXPREFIX',
-                                                   suffix = '$XELATEXSUFFIX',
-                                                   emitter = {},
-                                                   source_ext_match = None,
-                                                   single_source=True)
+            XELATEXBuilder = SCons.Builder.Builder(
+                action={},
+                source_scanner=SCons.Tool.PDFLaTeXScanner,
+                prefix='$XELATEXPREFIX',
+                suffix='$XELATEXSUFFIX',
+                emitter={},
+                source_ext_match=None,
+                single_source=True,
+            )
         env['BUILDERS']['XELATEX'] = XELATEXBuilder
 
     env['XETEXPREFIX'] = ''
@@ -164,16 +176,18 @@ def generate(env):
         # allow cd command to change drives on Windows
         CDCOM = 'cd /D '
 
-    env['XETEX']      = 'xetex'
+    env['XETEX'] = 'xetex'
     env['XETEXFLAGS'] = SCons.Util.CLVar('-interaction=nonstopmode -recorder')
-    env['XETEXCOM']   = CDCOM + '${TARGET.dir} && $XETEX $XETEXFLAGS ${SOURCE.file}'
+    env['XETEXCOM'] = CDCOM + '${TARGET.dir} && $XETEX $XETEXFLAGS ${SOURCE.file}'
 
-    env['XELATEX']        = 'xelatex'
-    env['XELATEXFLAGS']   = SCons.Util.CLVar('-interaction=nonstopmode -recorder')
-    env['XELATEXCOM']     = CDCOM + '${TARGET.dir} && $XELATEX $XELATEXFLAGS ${SOURCE.file}'
+    env['XELATEX'] = 'xelatex'
+    env['XELATEXFLAGS'] = SCons.Util.CLVar('-interaction=nonstopmode -recorder')
+    env['XELATEXCOM'] = CDCOM + '${TARGET.dir} && $XELATEX $XELATEXFLAGS ${SOURCE.file}'
+
 
 def exists(env):
-    return env.Detect(['xelatex','xetex'])
+    return env.Detect(['xelatex', 'xetex'])
+
 
 # Local Variables:
 # tab-width:4
