@@ -28,11 +28,10 @@
 
 from os.path import splitext
 
-environment = Environment (
-    tools = [ 'vala' , 'cc' , 'link' ] ,
-    VALACPACKAGES = [ 'gtk+-3.0' ] ,
-    )
+environment = Environment(
+    tools=['vala', 'cc', 'link'],
+    VALACPACKAGES=['gtk+-3.0'],
+)
 
-for f in Glob ( '*.vala' ) :
-    environment.ValaProgram ( splitext ( f.name ) [0] , f )
-
+for f in Glob('*.vala'):
+    environment.ValaProgram(splitext(f.name)[0], f)

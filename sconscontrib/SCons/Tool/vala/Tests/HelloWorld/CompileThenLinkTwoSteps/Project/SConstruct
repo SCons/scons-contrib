@@ -31,14 +31,13 @@ from os import environ
 
 gtkLibrary = 'gtk+-3.0'
 
-environment = Environment (
-    tools = [ 'vala' , 'cc' , 'link' ] ,
-    VALACPACKAGES = [ gtkLibrary ] ,
-    ENV = environ , # Must ensure we get the current environment to get all the right paths in place.
-    )
-environment.MergeFlags ( [ '!pkg-config --cflags --libs ' + gtkLibrary ] )
+environment = Environment(
+    tools=['vala', 'cc', 'link'],
+    VALACPACKAGES=[gtkLibrary],
+    ENV=environ,  # Must ensure we get the current environment to get all the right paths in place.
+)
+environment.MergeFlags(['!pkg-config --cflags --libs ' + gtkLibrary])
 
-for f in Glob ( '*.vala' ) :
-    item = environment.Vala ( f )
-    environment.Program ( f.name.replace ( '.vala' , '' ) , item )
-
+for f in Glob('*.vala'):
+    item = environment.Vala(f)
+    environment.Program(f.name.replace('.vala', ''), item)

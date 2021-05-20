@@ -28,26 +28,27 @@
 
 import TestSCons
 
-def runProgramAndTestOutput ( variant ) :
-    test.run ( program = test.workpath ( 'helloWorld{}{}'.format ( variant , TestSCons._exe ) ) )
-    test.fail_test ( test.stdout ( ) != 'Hello World.\n' )
 
-test = TestSCons.TestSCons ( )
+def runProgramAndTestOutput(variant):
+    test.run(program=test.workpath('helloWorld{}{}'.format(variant, TestSCons._exe)))
+    test.fail_test(test.stdout() != 'Hello World.\n')
 
-test.dir_fixture ( 'Project' )
-test.file_fixture ( '../../../vala.py' )
 
-if not test.where_is ( 'vala' ) :
-    test.skip_test ( 'Could not find vala tool, skipping test.\n' )
+test = TestSCons.TestSCons()
 
-test.run ( )
+test.dir_fixture('Project')
+test.file_fixture('../../../vala.py')
 
-test.must_exist ( test.workpath ( 'helloWorldFunction' ) )
-test.must_exist ( test.workpath ( 'helloWorldObject' ) )
-test.must_exist ( test.workpath ( 'helloWorldWindow' ) )
+if not test.where_is('vala'):
+    test.skip_test('Could not find vala tool, skipping test.\n')
 
-runProgramAndTestOutput ( 'Function' )
-runProgramAndTestOutput ( 'Object' )
+test.run()
 
-test.pass_test ( )
+test.must_exist(test.workpath('helloWorldFunction'))
+test.must_exist(test.workpath('helloWorldObject'))
+test.must_exist(test.workpath('helloWorldWindow'))
 
+runProgramAndTestOutput('Function')
+runProgramAndTestOutput('Object')
+
+test.pass_test()
