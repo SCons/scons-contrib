@@ -57,6 +57,7 @@ except ImportError:
     # -   https://github.com/python/mypy/issues/1153
     import importlib_metadata as metadata  # type: ignore
 
+#TODO: Remove once SCons drops Python 3.5
 if sys.version_info < (3, 6):
     raise RuntimeError(
         "Panflute (and thus this Tool) does not support Python < 3.6"
