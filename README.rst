@@ -1,5 +1,6 @@
-.. note:: Installs using pip or setup.py are not presently implemented.
-   Suggest manually add a tool to ``site_scons/site_tools`` to use.
+.. note:: Installs using pip searching pypi.org are not presently
+   implemented.  For alternative options, see the installation
+   instructions.
 
 SCons - a software construction tool - Contributed Software
 ###########################################################
@@ -54,14 +55,18 @@ so you may need to be a little patient or propose fixes yourself.
 Installing
 ==========
 
+To install using a ``setuptools`` backed method (``pip`` or
+``setup.py``), you must be using SCons 4 or newer.  If you are using an
+older version of SCons, see the Manual Installation instructions.
+
 For installing via ``pip``, you have to say
 
 ::
 
-    pip install sconscontrib
+    pip install git+https://github.com/SCons/scons-contrib.git
 
 Your other option is to clone the repository 
-``https://github.com/SCons/scons-contrib.git``,
+https://github.com/SCons/scons-contrib.git,
 change into its top-level folder,
 get root and then run the command
 
