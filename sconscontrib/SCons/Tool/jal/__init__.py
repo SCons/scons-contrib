@@ -36,7 +36,7 @@ import SCons.Builder
 import SCons.Util
 
 
-class ToolJalWarning(SCons.Warnings.Warning):
+class ToolJalWarning(SCons.Warnings.SConsWarning):
     pass
 
 

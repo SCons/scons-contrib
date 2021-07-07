@@ -78,7 +78,7 @@ def rst2something(target, source, env, validOptions, writer):
 #
 # Warnings
 #
-class ToolReSTWarning(SCons.Warnings.Warning):
+class ToolReSTWarning(SCons.Warnings.SConsWarning):
     pass
 
 

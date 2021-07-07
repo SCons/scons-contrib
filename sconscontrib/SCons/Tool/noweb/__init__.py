@@ -32,7 +32,7 @@ import SCons.Builder
 import SCons.Util
 
 
-class ToolNowebWarning(SCons.Warnings.Warning):
+class ToolNowebWarning(SCons.Warnings.SConsWarning):
     pass
 
 

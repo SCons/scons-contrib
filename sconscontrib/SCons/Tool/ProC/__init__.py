@@ -26,7 +26,7 @@ import SCons.Action
 import SCons.Builder
 
 
-class ToolProCWarning(SCons.Warnings.Warning):
+class ToolProCWarning(SCons.Warnings.SConsWarning):
     pass
 
 
