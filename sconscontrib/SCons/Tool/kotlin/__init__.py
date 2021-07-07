@@ -31,7 +31,7 @@ import SCons.Builder
 import SCons.Util
 
 
-class ToolKotlinWarning(SCons.Warnings.Warning):
+class ToolKotlinWarning(SCons.Warnings.SConsWarning):
     pass
 
 

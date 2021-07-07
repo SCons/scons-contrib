@@ -55,7 +55,7 @@ from sphinx.util.matching import patfilter, compile_matchers
 from sphinx.util.osutil import make_filename
 
 
-class ToolSphinxWarning(SCons.Warnings.Warning):
+class ToolSphinxWarning(SCons.Warnings.SConsWarning):
     pass
 
 

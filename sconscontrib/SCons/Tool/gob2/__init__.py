@@ -37,7 +37,7 @@ import SCons.Builder
 import SCons.Util
 
 
-class ToolGob2Warning(SCons.Warnings.Warning):
+class ToolGob2Warning(SCons.Warnings.SConsWarning):
     pass
 
 

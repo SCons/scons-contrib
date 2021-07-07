@@ -28,7 +28,7 @@ import SCons.Action
 import SCons.Builder
 
 
-class ToolIDLWarning(SCons.Warnings.Warning):
+class ToolIDLWarning(SCons.Warnings.SConsWarning):
     pass
 
 
