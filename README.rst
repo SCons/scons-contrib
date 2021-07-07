@@ -1,6 +1,7 @@
 .. note:: Installs using pip searching pypi.org are not presently
    implemented.  For alternative options, see the installation
    instructions.
+   Suggest manually add a tool to ``site_scons/site_tools`` to use.
 
 SCons - a software construction tool - Contributed Software
 ###########################################################
