@@ -1,3 +1,11 @@
 [build-system]
 requires = ["setuptools>=42","wheel"]
 build-backend = "setuptools.build_meta"
+
+[tool.black]
+quiet = true
+target-version = ['py36']
+skip-string-normalization = true
+
+[mypy]
+python_version = 3.6
