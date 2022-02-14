@@ -16,6 +16,6 @@ Usage
 
 ::
 
-    env = Environment(tools=['default','pdftex','pdflatex','lyx'])
+    env = Environment(tools=['default', 'pdftex', 'pdflatex', 'lyx'])
     env.PDF(source='test.lyx')
 

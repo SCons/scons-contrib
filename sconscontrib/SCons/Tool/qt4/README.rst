@@ -168,14 +168,10 @@ and QtNetwork modules:
 
     Import('qtEnv')
     env = qtEnv.Clone()
-    env.EnableQt4Modules([
-                          'QtGui',
-                          'QtCore',
-                          'QtNetwork'
-                         ])
+    env.EnableQt4Modules(['QtGui', 'QtCore', 'QtNetwork'])
     # Add your CCFLAGS and CPPPATHs to env here...
 
-    env.Program('foo', Glob('*.cpp')) 
+    env.Program('foo', Glob('*.cpp'))
 
 
 
