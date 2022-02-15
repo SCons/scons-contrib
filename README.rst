@@ -1,8 +1,3 @@
-.. note:: Installs using pip searching pypi.org are not presently
-   implemented.  For alternative options, see the installation
-   instructions.
-   Suggest manually add a tool to ``site_scons/site_tools`` to use.
-
 SCons - a Software Construction Tool - Contributed Software
 ###########################################################
 
@@ -32,13 +27,13 @@ Contributing
 
 Contribute new tools by making a Pull Request on this repository.
 Please create a new directory per contribution.
-(We may re-organize if it becomes obvious that doing so would
+(We may re-organize this it becomes obvious that doing so would
 make it easier for users to find useful logic.)
 Please include a README file (README.rst or other form)
 describing any information about your tool, *including the
-license it is released under*. SCons has a preference for
-tools to be released under the same license as SCons itself
-for maximum compatibility, but that is not mandatory
+license it is released under*. If at all possible, please
+use the MIT license that as SCons itself is released under,
+for maximum license compatibility, but that is not mandatory
 as long as the actual license is clearly indicated.
 
 
@@ -68,7 +63,7 @@ SCons, it pulls it in via Python's import system. This broadly
 means any tool you want to use needs to be findable by Python,
 in ``sys.path``, which when running SCons includes several
 special directories.  For more information on this, see the
-Manual page under
+SCons Manual page under
 `Tools <https://scons.org/doc/production/HTML/scons-man.html#tools>`_
 and `site-dir <https://scons.org/doc/production/HTML/scons-man.html#opt-site-dir>`_
 
@@ -78,7 +73,7 @@ puts SCons itself.
 
 
 Installing via pip
-******************
+------------------
 
 To install using a ``setuptools`` backed method (``pip`` or
 ``setup.py``), you must be using SCons 4.0 or newer.
@@ -127,7 +122,7 @@ repository (company security policy, perhaps?)
 
 
 Manual Installation
-*******************
+-------------------
 
 `Installing via pip`_ results in all of the contrib tools being
 installed at once. If you just want a specific tool or two,
@@ -138,17 +133,41 @@ To do this, clone the repository::
     git clone https://github.com/SCons/scons-contrib.git
 
 and copy the required tool directory into one of the locations
-SCons searches for tools. Roughly speaking, there are three
-system-specific locations that are searched by default:
-a system-wide location, a user-account location, and inside
-a given project. These default locations are in the man page at
-`<https://scons.org/doc/production/HTML/scons-man.html#opt-site-dir>`_
+SCons searches for tools. Often the preferred choice is to copy
+it to the project's ``site_scons/site_tools``.
 
-In addition to the defaults, the project-level site directory
-can be changed by supplying the ``--site-dir`` option,
+Manual Installation Options
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Roughly speaking, there are three (operating system-specific)
+locations that are searched by default:
+a system-wide location, a user-account location, and a location
+insde a specific project (which is the path listed above).
+These default locations are listed by operating system in the
+`SCons Manual Page <https://scons.org/doc/production/HTML/scons-man.html#opt-site-dir>`_.
+
+In addition to the defaults as places to search,
+the project-level site directory can be changed by
+supplying the ``--site-dir`` option,
 and SCons can also be given additional locations to look for
 tools using the ``toolpath`` parameter when creating a
-Construction Environment. See the manpage for details.
+Construction Environment.
+
+The choice of which one of these to use depends on the intended
+scope - whether the tool is to be used for many projects
+or just for one, etc.
+
+
+Activating The Tool
+-------------------
+
+Once a tool is used, it needs to be activated for actual use.
+SCons searches for various default tools, and activates them
+if found, but must be asked to look at others, whether built-in
+or added later. In most cases this is done by giving a list of
+desired tools for a given construction environment when it is created::
+
+    env = Environment(tools=['default', 'mytool'])
 
 
 Requirements
