@@ -32,7 +32,7 @@ make it easier for users to find useful logic.)
 Please include a README file (README.rst or other form)
 describing any information about your tool, *including the
 license it is released under*. If at all possible, please
-use the MIT license that as SCons itself is released under,
+use the MIT license that SCons itself is released under,
 for maximum license compatibility, but that is not mandatory
 as long as the actual license is clearly indicated.
 
@@ -48,8 +48,11 @@ If the license is not MIT, make sure you are okay to include
 the tool in your project under its terms.
 
 These are not "supported" directly by the SCons project.
-For problems/discussion, please file issues and raise PRs against
-`this project <https://github.com/SCons/scons-contrib>`_.
+For problems/discussion, please file an
+`Issue <https://github.com/SCons/scons-contrib/issues>`_
+or raise a
+`Pull Request <https://github.com/SCons/scons-contrib/pulls>`_
+against this project.
 Several of the original authors are not hanging around here,
 so you may need to be a little patient or propose fixes yourself.
 
