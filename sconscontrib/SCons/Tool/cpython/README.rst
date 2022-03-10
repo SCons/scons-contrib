@@ -17,9 +17,7 @@ target directory.
 
 Examples
 ========
-A simple example of an "``SConstruct``" file:
-
-::
+A simple example of an "``SConstruct``" file::
 
     env = Environment()
     hello = File('hello.py')
@@ -30,9 +28,7 @@ A simple example of an "``SConstruct``" file:
 "``SCons``" invoked with the "``-Q install``" parameter will compile the "``hello.py``" file into
 "``hello.pyc``", and copy both files into "``/usr/local/bin/``" directory.
 
-Sample output:
-
-::
+Sample output::
 
     $ scons -Q install
     Install file: "hello.py" as "/usr/local/bin/hello.py"
@@ -42,28 +38,21 @@ Sample output:
 "``InstallPython``" can also compile Python source files into optimized
 binary files ("``.pyo``" suffix) instead of ordinary binaries ("``.pyc``" files). To
 achieve this, change the call to "``Environment()``" and set the "``CPYTHON_PYC``"
-variable to '``0``' (zero):
-
-::
+variable to '``0``' (zero)::
 
     env = Environment(CPYTHON_PYC=0)
     hello = File('hello.py')
     env.InstallPython('/usr/local/bin/', hello)
     env.Alias('install', '/usr/local/bin/')
 
-
-Sample output:
-
-::
+Sample output::
 
     $ scons -Q install
     Install file: "hello.py" as "/usr/local/bin/hello.py"
     Install file: "hello.pyo" as "/usr/local/bin/hello.pyo"
 
-
-The "``InstallPython``" method accepts both, files and directories, as its source arguments:
-
-::
+The "``InstallPython``" method accepts both files and directories
+as its source arguments::
 
     env = Environment()
     pyfiles = Dir('pyfiles/')
@@ -71,12 +60,11 @@ The "``InstallPython``" method accepts both, files and directories, as its sourc
     env.Alias('install', '/usr/local/bin')
 
 
-Running "``scons -Q install``" will copy all the "``.py``" files from "``pyfiles``" directory
-into "``/usr/local/bin/pyfiles``" directory along with corresponding "``.pyc``" files.
+Running "``scons -Q install``" will copy all the "``.py``" files from
+the "``pyfiles``" directory into "``/usr/local/bin/pyfiles``"
+directory along with corresponding "``.pyc``" files.
 
-Sample output:
-
-::
+Sample output::
 
     $ scons -Q install
     Install file: "pyfiles/hello.py" as "/usr/local/bin/pyfiles/hello.py"
@@ -84,10 +72,7 @@ Sample output:
     Install file: "pyfiles/hello2.py" as "/usr/local/bin/pyfiles/hello2.py"
     Install file: "pyfiles/hello2.pyc" as "/usr/local/bin/pyfiles/hello2.pyc"
 
-
-Mixing files and directories is also possible:
-
-::
+Mixing files and directories is also possible::
 
     env = Environment()
     hello = File('hello.py')
@@ -95,10 +80,7 @@ Mixing files and directories is also possible:
     env.InstallPython('/usr/local/bin/', [hello, pyfiles])
     env.Alias('install', '/usr/local/bin')
 
-
-Sample output:
-
-::
+Sample output::
 
     $ scons -Q install
     Install file: "hello.py" as "/usr/local/bin/hello.py"
@@ -107,7 +89,3 @@ Sample output:
     Install file: "pyfiles/hello.pyc" as "/usr/local/bin/pyfiles/hello.pyc"
     Install file: "pyfiles/hello2.py" as "/usr/local/bin/pyfiles/hello2.py"
     Install file: "pyfiles/hello2.pyc" as "/usr/local/bin/pyfiles/hello2.pyc"
-
-
-
-

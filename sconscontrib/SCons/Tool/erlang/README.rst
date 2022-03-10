@@ -10,8 +10,8 @@ This tool provides the ``Erlang`` and ``EDoc`` builders:
 
 For example::
 
-    environment = Environment ( tools = [ 'erlang' ] )
-    environment.Erlang ( 'example.erl' ) 
+    env = Environment(tools=['erlang'])
+    env.Erlang('example.erl')
 
 
 Installation

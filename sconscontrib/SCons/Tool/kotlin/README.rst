@@ -35,12 +35,12 @@ target filename to the `Kotlin` Builder has no effect, it will only mix-up your 
 However, for the `KotlinJar` and `KotlinRuntimeJar` Builders it's perfectly legal to
 specify::
 
-    env = Environment(tools=['default','kotlin'])
+    env = Environment(tools=['default', 'kotlin'])
     env.KotlinRuntimeJar('run.jar', 'hello.kt')
    
 or::
 
-    env = Environment(tools=['default','kotlin'])
+    env = Environment(tools=['default', 'kotlin'])
     env.KotlinRuntimeJar('run', 'hello')
 
 TODO

@@ -24,9 +24,7 @@ For more infos about this, please refer to
 How to activate
 ---------------
 For activating the tool "qt5", you have to add its name to the Environment constructor,
-like this
-
-::
+like this::
 
     env = Environment(tools=['default','qt5'])
 
@@ -36,15 +34,11 @@ Environment and ``os.environ``. If it is not set, the value of ``QTDIR`` (in
 Environment/``os.environ``) is used as a fallback.
 
 So, you either have to explicitly give the path of your Qt5 installation to the
-Environment with
-
-::
+Environment with::
 
     env['QT5DIR'] = '/usr/local/Trolltech/Qt-5.2.3'
 
-
 or set the ``QT5DIR`` as environment variable in your shell.
-
 
 Requirements
 ------------
@@ -62,36 +56,29 @@ the "qt5" tool initializes all ``QT5_*``
 construction variables listed in the Reference manual. This happens when the tool
 is "detected" during Environment construction. As a consequence, the setup
 of the tool gets a two-stage process, if you want to override the values provided
-by your current shell settings:
-
-::
+by your current shell settings::
 
     # Stage 1: create plain environment
     qtEnv = Environment()
     # Set new vars
-    qtEnv['QT5DIR'] = '/usr/local/Trolltech/Qt-5.2.3
+    qtEnv['QT5DIR'] = '/usr/local/Trolltech/Qt-5.2.3'
     qtEnv['ENV']['PKG_CONFIG_PATH'] = '/usr/local/Trolltech/Qt-5.2.3/lib/pkgconfig'
     # Stage 2: add qt5 tool
     qtEnv.Tool('qt5')
-
-
-
 
 Suggested boilerplate
 =====================
 Based on the requirements above, we suggest a simple ready-to-go setup
 as follows:
 
-SConstruct
-
-::
+SConstruct::
 
     # Detect Qt version
     qtdir = detectLatestQtDir()
 
     # Create base environment
     baseEnv = Environment()
-    #...further customization of base env
+    # ...further customization of base env
 
     # Clone Qt environment
     qtEnv = baseEnv.Clone()
@@ -100,7 +87,7 @@ SConstruct
     qtEnv['QT5DIR'] = qtdir
     # Add qt5 tool
     qtEnv.Tool('qt5')
-    #...further customization of qt env
+    # ...further customization of qt env
 
     # Export environments
     Export('baseEnv qtEnv')
@@ -109,32 +96,26 @@ SConstruct
     # ...including the call to your SConscripts
 
 
-In a SConscript
-
-::
+In a SConscript::
 
     # Get the Qt5 environment
     Import('qtEnv')
     # Clone it
     env = qtEnv.clone()
     # Patch it
-    env.Append(CCFLAGS=['-m32']) # or whatever
+    env.Append(CCFLAGS=['-m32'])  # or whatever
     # Use it
     env.StaticLibrary('foo', Glob('*.cpp'))
 
 
 The detection of the Qt directory could be as simple as directly assigning
-a fixed path
-
-::
+a fixed path::
 
     def detectLatestQtDir():
         return "/usr/local/qt5.3.2"
 
 
-or a little more sophisticated
-
-::
+or a little more sophisticated::
 
     # Tries to detect the path to the installation of Qt with
     # the highest version number
@@ -154,29 +135,20 @@ or a little more sophisticated
                 paths.sort()
                 return paths[-1]
             else:
-                return os.environ.get("QTDIR","")
-
-
+                return os.environ.get("QTDIR", "")
 
 A first project
 ===============
 The following SConscript is for a simple project with
 some cxx files, using the QtCore, QtGui
-and QtNetwork modules:
-
-::
+and QtNetwork modules::
 
     Import('qtEnv')
     env = qtEnv.Clone()
-    env.EnableQt5Modules([
-                          'QtGui',
-                          'QtCore',
-                          'QtNetwork'
-                         ])
+    env.EnableQt5Modules(['QtGui', 'QtCore', 'QtNetwork'])
     # Add your CCFLAGS and CPPPATHs to env here...
 
-    env.Program('foo', Glob('*.cpp')) 
-
+    env.Program('foo', Glob('*.cpp'))
 
 
 MOC it up
@@ -186,9 +158,7 @@ done by the user. The tool usually detects the ``Q_OBJECT``
 macro and calls the "``moc``" executable accordingly.
 
 If you don't want this, you can switch off the automocing
-by a 
-
-::
+by a::
 
     env['QT5_AUTOSCAN'] = 0
 
@@ -196,9 +166,7 @@ by a
 in your SConscript file. Then, you have to moc your files
 explicitly, using the Moc5 builder.
 
-You can also switch to an extended automoc strategy with
-
-::
+You can also switch to an extended automoc strategy with::
 
     env['QT5_AUTOSCAN_STRATEGY'] = 1
 
@@ -207,38 +175,28 @@ Please read the description of the ``QT5_AUTOSCAN_STRATEGY``
 variable in the Reference manual for details.
 
 For debugging purposes, you can set the variable ``QT5_DEBUG``
-with
-
-::
+with::
 
     env['QT5_DEBUG'] = 1
 
-
 which outputs a lot of messages during automocing.
-
 
 Forms (.ui)
 ===========
 The header files with setup code for your GUI classes, are not
 compiled automatically from your ``.ui`` files. You always
-have to call the Uic5 builder explicitly like
-
-::
+have to call the Uic5 builder explicitly like::
 
     env.Uic5(Glob('*.ui'))
     env.Program('foo', Glob('*.cpp'))
-
-
 
 Resource files (.qrc)
 =====================
 Resource files are not built automatically, you always
 have to add the names of the ``.qrc`` files to the source list
-for your program or library:
+for your program or library::
 
-::
-
-    env.Program('foo', Glob('*.cpp')+Glob('*.qrc'))
+    env.Program('foo', Glob('*.cpp') + Glob('*.qrc'))
 
 
 For each of the Resource input files, its prefix defines the
@@ -246,28 +204,19 @@ name of the resulting resource. An appropriate "``-name``" option
 is added to the call of the ``rcc`` executable
 by default.
 
-You can also call the Qrc5 builder explicitly as
+You can also call the Qrc5 builder explicitly as::
 
-::
+    qrccc = env.Qrc5('foo')  # ['foo.qrc'] -> ['qrc_foo.cc']
 
-    qrccc = env.Qrc5('foo') # ['foo.qrc'] -> ['qrc_foo.cc']
+or (overriding the default suffix)::
 
-
-or (overriding the default suffix)
-
-::
-
-    qrccc = env.Qrc5('myprefix_foo.cxx','foo.qrc') # -> ['qrc_myprefix_foo.cxx']
+    qrccc = env.Qrc5('myprefix_foo.cxx','foo.qrc')  # -> ['qrc_myprefix_foo.cxx']
 
 
 and then add the resulting cxx file to the sources of your
-Program/Library:
-
-::
+Program/Library::
 
     env.Program('foo', Glob('*.cpp') + qrccc)
-
-
 
 Translation files
 =================
@@ -275,77 +224,51 @@ The update of the ``.ts`` files and the conversion to binary
 ``.qm`` files is not done automatically. You have to call the
 corresponding builders on your own.
 
-Example for updating a translation file:
-
-::
+Example for updating a translation file::
 
     env.Ts5('foo.ts','.') # -> ['foo.ts']
-
 
 By default, the ``.ts`` files are treated as *precious* targets. This means that
 they are not removed prior to a rebuild, but simply get updated. Additionally, they
 do not get cleaned on a "``scons -c``". If you want to delete the translation files
-on the "``-c``" SCons command, you can set the variable "``QT5_CLEAN_TS``" like this
-
-::
+on the "``-c``" SCons command, you can set the variable "``QT5_CLEAN_TS``" like this::
 
     env['QT5_CLEAN_TS']=1
 
-
 Example for releasing a translation file, i.e. compiling
-it to a ``.qm`` binary file:
-
-::
+it to a ``.qm`` binary file::
 
     env.Qm5('foo') # ['foo.ts'] -> ['foo.qm']
 
-
-or (overriding the output prefix)
-
-::
+or (overriding the output prefix)::
 
     env.Qm5('myprefix','foo') # ['foo.ts'] -> ['myprefix.qm']
 
-
 As an extension both, the Ts5() and Qm5 builder, support the definition of
-multiple targets. So, calling
-
-::
+multiple targets. So, calling::
 
     env.Ts5(['app_en','app_de'], Glob('*.cpp'))
 
-
-and
-
-::
+and::
 
     env.Qm5(['app','copy'], Glob('*.ts'))
-
 
 should work fine.
 
 Finally, two short notes about the support of directories for the Ts5() builder. You can
-pass an arbitrary mix of cxx files and subdirs to it, as in
+pass an arbitrary mix of cxx files and subdirs to it, as in::
 
-::
-
-    env.Ts5('app_en',['sub1','appwindow.cpp','main.cpp']))
-
+    env.Ts5('app_en', ['sub1', 'appwindow.cpp', 'main.cpp']))
 
 where ``sub1`` is a folder that gets scanned recursively for cxx files by ``lupdate``.
 But like this, you lose all dependency information for the subdir, i.e. if a file
 inside the folder changes, the .ts file is not updated automatically! In this case
-you should tell SCons to always update the target:
+you should tell SCons to always update the target::
 
-::
-
-    ts = env.Ts5('app_en',['sub1','appwindow.cpp','main.cpp'])
+    ts = env.Ts5('app_en', ['sub1', 'appwindow.cpp', 'main.cpp'])
     env.AlwaysBuild(ts)
-
 
 Last note: specifying the current folder "``.``" as input to Ts5() and storing the resulting
 .ts file in the same directory, leads to a dependency cycle! You then have to store the .ts
 and .qm files outside of the current folder, or use ``Glob('*.cpp'))`` instead.
-
-
 

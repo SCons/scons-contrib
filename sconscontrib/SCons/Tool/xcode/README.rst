@@ -33,16 +33,11 @@ Usage
 -----
 
 To generate an Xcode project file, simply add a call to ``env.XCodeProject``
-to your ``SConstruct`` file:
+to your ``SConstruct`` file::
 
-.. code:: python
-
-  env = Environment(tools=['default', 'xcode'])
-
-  myprog = env.Program('build/MyProg', ['src/main.cc'])
-
-  env.XcodeProject('MyProject.xcodeproj',
-                   products=myprog)
+    env = Environment(tools=['default', 'xcode'])
+    myprog = env.Program('build/MyProg', ['src/main.cc'])
+    env.XcodeProject('MyProject.xcodeproj', products=myprog)
 
 The resulting Xcode project file will contain only a single group, "Products",
 in which you will see the ``MyProg`` program.  It will also contain two legacy
@@ -54,15 +49,17 @@ run/debug (this only happens for ``env.Program`` at present).
 
 Obviously that project file is very minimal; you will probably want to include
 your own groups and source files in practice, which you can do by passing a
-dictionary into the ``XcodeProject`` builder, e.g.:
+dictionary into the ``XcodeProject`` builder, e.g.::
 
-.. code:: python
-
-  env.XcodeProject('MyProject.xcodeproj',
-                   groups={ 'Headers': [ 'src/MyProg.h' ],
-                            'Sources': [ 'src/main.cc', 'src/utils.cc' ],
-                            'Documentation': [ 'doc/README.rst' ] },
-                   products=myprog)
+    env.XcodeProject(
+        'MyProject.xcodeproj',
+        groups={
+            'Headers': ['src/MyProg.h'],
+            'Sources': ['src/main.cc', 'src/utils.cc'],
+            'Documentation': ['doc/README.rst'],
+        },
+        products=myprog,
+    )
 
 Note also that ``products`` accepts a list, so you can provide multiple
 products, in which case you will end up with additional targets in your Xcode
@@ -79,31 +76,24 @@ SConstruct file, namely
 These options are used by the legacy build targets automatically.
 
 The ``Clean`` action is handled automatically by the builder; if you wish to
-use variants, you can do so, for instance:
+use variants, you can do so, for instance::
 
-.. code:: python
+    variant = 'Debug'
+    if GetOption('xcode_variant') == 'Release':
+        variant = 'Release'
+    if variant == 'Debug':
+        env.Append(CCFLAGS=['-g'])
+    else:
+        env.Append(CCFLAGS=['-Os'])
+    ...
+    env.XcodeProject(..., variants=['Debug', 'Release'], ...)
 
-  variant = 'Debug'
-  if GetOption('xcode_variant') == 'Release':
-      variant = 'Release'
+Take care if you do something like this::
 
-  if variant == 'Debug':
-      env.Append(CCFLAGS=['-g'])
-  else:
-      env.Append(CCFLAGS=['-Os'])
-
-  ...
-
-  env.XcodeProject(...,
-                   variants=['Debug', 'Release'],
-                   ...)
-
-Take care if you do something like this:
-
-.. code:: python
-
-  myprog = env.Program(os.path.join('build', variant, 'MyProg'),
-                       ['src/main.cc'])
+    myprog = env.Program(
+        os.path.join('build', variant, 'MyProg'),
+        ['src/main.cc']
+    )
 
 as you will find that the automatically generated build scheme will use the
 setting of ``variant`` that was active when you generated the Xcode project

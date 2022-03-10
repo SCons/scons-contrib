@@ -36,11 +36,11 @@ through the tool plugin system.
 Usage
 -----
 
-Once installed, to use the tool simply add
+Once installed, to use the tool simply add::
 
     env = Environment(tools=["pandoc"])
 
-to your ``SConstruct``.  Then, you specify a document via
+to your ``SConstruct``.  Then, you specify a document via::
 
    html = env.Pandoc("example.html", ["page1.md", "page2.md", "head.yaml"])
 
@@ -54,10 +54,10 @@ Manual Installation
 
 To manually install, copy this directory to ``site_scons/site_tools`` in
 you project or place it in the `appropriate location`_ for your system.
-For more details, check the `SCons user's guide`_.
+For more details, check the `SCons User Guide`_.
 
 To install using pip with SCons version 4 or later, clone the main
-repository and run
+repository and run::
 
     pip install .
 
@@ -68,7 +68,7 @@ repository and run
    work.
 
 .. _`appropriate location`: https://github.com/SCons/scons/wiki/ToolsIndex#Install_and_usage
-.. _`SCons user's guide`: http://scons.org/doc/production/HTML/scons-user.html
+.. _`SCons User Guide`: http://scons.org/doc/production/HTML/scons-user.html
 
 Requirements
 ------------

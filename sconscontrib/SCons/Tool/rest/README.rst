@@ -106,9 +106,11 @@ This work is still in a very basic state and hasn't been tested well
 with things like variant dirs, yet. 
 There will definitely arise the need for
 adding features, or a variable. Let us know if you can think of a nice
-improvement or have worked on a bugfix/patch with success. Enter your issues at the
-Bitbucket bug tracker for the ReST Tool, or write to the User General Discussion
-list of SCons at ``users@scons.tigris.org``.
+improvement or have worked on a bugfix/patch with success.
+Enter your issues at the
+Githib bug tracker https://github.com/scons/scons-contrib/issues,
+or write to the User General Discussion
+list of SCons at ``scons-users@scons.org``.
 
 
 

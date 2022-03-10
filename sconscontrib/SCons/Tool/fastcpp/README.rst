@@ -3,7 +3,7 @@ fastcpp Tool for SCons
 ######################
 
 This Tool is specialized on speeding up large C/CPP builds, measured in terms
-of source files.
+of number of source files.
 
 **!!Disclaimer!!**: For achieving significant speedups, this Tool uses several shortcuts
 that might lead to insecure builds. It may work and your builds get faster, but it might also
@@ -36,16 +36,17 @@ SCons configuration folder by calling::
 Usage
 #####
 
-You activate the Tool by adding it to the ``tools=`` list as follows::
+You activate the Tool by adding it to the ``tools`` list, for example::
 
-    env = Environment(tools=['default','fastcpp'])
+    env = Environment(tools=['default', 'fastcpp'])
 
-. The default set of tracked C/CPP suffixes is::
+The default set of tracked C/CPP suffixes is::
 
     '.c', '.cpp', '.h'
 
 and they can be changed by setting the variable ``FAST_CPPSUFFIXES``::
 
-    env = Environment(FAST_CPPSUFFIXES=['.hpp', '.C'],
-                      tools=['default','fastcpp'])
+    env = Environment(
+        FAST_CPPSUFFIXES=['.hpp', '.C'], tools=['default', 'fastcpp']
+    )
 

@@ -3,7 +3,7 @@ SCons tool for perl5 scripts and modules
 
 To use it, drop the `perl5` directory on the `site_scons/site_tools`
 (from the root of your project).  You will then want something similar
-to this on your SConscript file:
+to this on your SConscript file::
 
     env = Environment(PERL5LIB=[Dir('lib-perl5'])
     env.Tool('perl5')
