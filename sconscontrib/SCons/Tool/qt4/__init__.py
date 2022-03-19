@@ -769,7 +769,12 @@ def generate(env):
         QT4_QRCCXXPREFIX = 'qrc_',
         QT4_MOCDEFPREFIX = '-D',
         QT4_MOCDEFSUFFIX = '',
-        QT4_MOCDEFINES = '${_defines(QT4_MOCDEFPREFIX, CPPDEFINES, QT4_MOCDEFSUFFIX, __env__)}',
+
+        # For SCons >= 4.2.0
+        QT4_MOCDEFINES = '${_defines(QT4_MOCDEFPREFIX, CPPDEFINES, QT4_MOCDEFSUFFIX, __env__, TARGET, SOURCE)}',
+        # For SCons <= 4.1.0
+        # QT4_MOCDEFINES = '${_defines(QT4_MOCDEFPREFIX, CPPDEFINES, QT4_MOCDEFSUFFIX, __env__)}',
+
         QT4_MOCCPPPATH = [],
         QT4_MOCINCFLAGS = '$( ${_concat(QT4_MOCINCPREFIX, QT4_MOCCPPPATH, INCSUFFIX, __env__, RDirs)} $)',
 
