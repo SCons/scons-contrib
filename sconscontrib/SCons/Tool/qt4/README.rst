@@ -2,6 +2,11 @@
 The SCons qt4 tool
 ##################
 
+NOTE 
+====
+Code expects SCons 4.2.0 or higher. If you must use an older version of SCons, 
+search for _defines in __init__.py and uncomment the old version.
+
 Basics
 ======
 This tool can be used to compile Qt projects, designed for versions 4.x.y and higher.
