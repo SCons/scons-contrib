@@ -46,10 +46,18 @@ def generate(env) :
     env['VALACFLAGS'] = SCons.Util.CLVar('')
     env['VALACPACKAGES'] = SCons.Util.CLVar('')
     env['VALACPACKAGEPREFIX'] = '--pkg='
-    env['_VALACPACKAGES'] = '${ _defines(VALACPACKAGEPREFIX, VALACPACKAGES, None, __env__) }'
+    env['_VALACPACKAGES'] = '${ _defines(VALACPACKAGEPREFIX, VALACPACKAGES, None, __env__, TARGET, SOURCE) }'
+
+    # If using SCons < 4.3.1 and > 4.2.0 swap the following line for above
+    # env['_VALACPACKAGES'] = '${ _defines(VALACPACKAGEPREFIX, VALACPACKAGES, None, __env__, TARGET, SOURCE) }'
+
     env['VALACPACKAGEPATHS'] = SCons.Util.CLVar('')
     env['VALACPACKAGEPATHPREFIX'] = '--vapidir='
-    env['_VALACPACKAGEPATHS'] = '${ _defines(VALACPACKAGEPATHPREFIX, VALACPACKAGEPATHS, None, __env__) }'
+
+    env['_VALACPACKAGEPATHS'] = '${ _defines(VALACPACKAGEPATHPREFIX, VALACPACKAGEPATHS, None, __env__, TARGET, SOURCE) }'
+    # If using SCons < 4.3.1 and > 4.2.0 swap the following line for above
+    # env['_VALACPACKAGEPATHS'] = '${ _defines(VALACPACKAGEPATHPREFIX, VALACPACKAGEPATHS, None, __env__) }'
+
     baseCommandString = '-o $TARGET $VALACFLAGS $_VALACPACKAGEPATHS $_VALACPACKAGES $SOURCES'
     valaProgramAction = SCons.Action.Action('$VALAC ' + baseCommandString, '$VALAPROGRAMCOMSTR')
     valaProgramBuilder = SCons.Builder.Builder (

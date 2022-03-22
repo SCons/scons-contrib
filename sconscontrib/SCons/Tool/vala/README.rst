@@ -1,6 +1,12 @@
 Vala Tool for SCons
 ===================
 
+NOTE 
+====
+Code expects SCons 4.2.0 or higher. If you must use an older version of SCons, 
+search for _defines in vala.py and uncomment the old version.
+
+
 Introduction
 ------------
 
