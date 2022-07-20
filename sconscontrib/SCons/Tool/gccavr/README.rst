@@ -1,5 +1,5 @@
 ######################
-gccavr Tool for SCons
+GccAvr Tool for SCons
 ######################
 
 This Tool enable the use ov avr-gcc toolchain for SCons.
@@ -7,13 +7,11 @@ This Tool enable the use ov avr-gcc toolchain for SCons.
 Usage
 #####
 
-You activate the Tool by adding it to the ``tools`` list, for example:
-.. code:: python
+You activate the Tool by adding it to the ``tools`` list, for example::
 
     cc = env.Clone(tools=['gccavr'])
 
-Then you have to provide the base path of your toolchain and its version:
-.. code:: python
+Then you have to provide the base path of your toolchain and its version::
 
     cc.SetGccAvrENVPath(gccavr_dir)
     cc.SetGccAvrVersion('7.3.0')
@@ -23,8 +21,7 @@ Then you have to provide the base path of your toolchain and its version:
     2. ``'7.3.0'`` is the folder name (i.e. the version) in lib/gcc/avr/<VERSION>/include
 
 That's it, now you can use the default Builders Object, Program, StaticLibrary (and Rom) to build your project:
-The following Sconcript builds a ``main.c`` file used to create an executable for Arduino Uno
-.. code:: python
+The following Sconcript builds a ``main.c`` file used to create an executable for Arduino Uno::
 
     import os
 
