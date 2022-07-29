@@ -57,7 +57,7 @@ def DoxyfileParse(file_contents, conf_dir, data=None):
 
     import shlex
 
-    lex = shlex.shlex(instream=file_contents, posix=True)
+    lex = shlex.shlex(instream=file_contents.decode("utf-8"), posix=True)
     lex.wordchars += "*+./-:@"
     lex.whitespace = lex.whitespace.replace("\n", "")
     lex.escape = ""
