@@ -57,7 +57,7 @@ def DoxyfileParse(file_contents, conf_dir, data=None):
 
     import shlex
 
-    lex = shlex.shlex(instream=file_contents.decode("utf-8"), posix=True)
+    lex = shlex.shlex(instream=file_contents, posix=True)
     lex.wordchars += "*+./-:@"
     lex.whitespace = lex.whitespace.replace("\n", "")
     lex.escape = ""
@@ -181,7 +181,7 @@ def DoxySourceFiles(node, env):
     # go onto the sources list
     conf_dir = os.path.dirname(str(node))
 
-    data = DoxyfileParse(node.get_contents(), conf_dir)
+    data = DoxyfileParse(node.get_text_contents(), conf_dir)
 
     if data.get("RECURSIVE", "NO") == "YES":
         recursive = True
@@ -291,7 +291,8 @@ def DoxyEmitter(target, source, env):
     """Doxygen Doxyfile emitter"""
     doxy_fpath = str(source[0])
     conf_dir = os.path.dirname(doxy_fpath)
-    data = DoxyfileParse(source[0].get_contents(), conf_dir)
+
+    data = DoxyfileParse(source[0].get_text_contents(), conf_dir)
 
     targets = []
     out_dir = data.get("OUTPUT_DIRECTORY", ".")
