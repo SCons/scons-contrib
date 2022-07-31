@@ -107,9 +107,8 @@ def DoxyfileParse(file_contents, conf_dir, data=None):
                 if nextfile in data[key]:
                     raise Exception("recursive @INCLUDE in Doxygen config: " + nextfile)
                 data[key].append(nextfile)
-                fh = open(nextfile, "r")
-                DoxyfileParse(fh.read(), conf_dir, data)
-                fh.close()
+                with open(nextfile, "r") as fh:
+                    DoxyfileParse(fh.read(), conf_dir, data)
             else:
                 append_data(data, key, new_data, token)
                 new_data = True
@@ -181,7 +180,7 @@ def DoxySourceFiles(node, env):
     # go onto the sources list
     conf_dir = os.path.dirname(str(node))
 
-    data = DoxyfileParse(node.get_contents(), conf_dir)
+    data = DoxyfileParse(node.get_text_contents(), conf_dir)
 
     if data.get("RECURSIVE", "NO") == "YES":
         recursive = True
@@ -291,7 +290,8 @@ def DoxyEmitter(target, source, env):
     """Doxygen Doxyfile emitter"""
     doxy_fpath = str(source[0])
     conf_dir = os.path.dirname(doxy_fpath)
-    data = DoxyfileParse(source[0].get_contents(), conf_dir)
+
+    data = DoxyfileParse(source[0].get_text_contents(), conf_dir)
 
     targets = []
     out_dir = data.get("OUTPUT_DIRECTORY", ".")
