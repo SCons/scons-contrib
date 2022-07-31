@@ -22,7 +22,7 @@
 import unittest
 import os
 import sys
-from .doxygen import DoxyfileParse
+from doxygen import DoxyfileParse
 
 
 class TestParser(unittest.TestCase):
@@ -52,6 +52,14 @@ INPUT  = test.h
     def test_recursive_include_tag(self):
         text = """@INCLUDE=recursive_include_test.cfg"""
         self.assertRaises(Exception, DoxyfileParse, text, self.test_config_dir)
+
+    def test_bytes_parse(self):
+        """Parsing bytes instead of txt should blow up."""
+        text = b"""
+# comment
+INPUT  = test.h
+"""
+        self.assertRaises(AttributeError, DoxyfileParse, text, self.test_config_dir)
 
 
 if __name__ == "__main__":
