@@ -6,7 +6,7 @@ Scons tool for compiling Google’s Protobuf
 Basics
 ------
 
-Put the ``protoc.py`` file in ``#site_scons/site_tools/`` then in your
+Copy this directory `Protoc` into the ``#site_scons/site_tools/`` directory then in your
 SConstruct file do something like:
 
 .. code:: python
