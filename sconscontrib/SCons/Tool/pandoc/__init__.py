@@ -468,7 +468,7 @@ _builder = SCons.Builder.Builder(
 def generate(env):
     """Add the Builders and construction variables to the Environment
     """
-    env["PANDOC"] = _detect(env)
+    env["PANDOC"] = exists(env)
     command = "$PANDOC $PANDOCFLAGS -o ${TARGET} ${SOURCES}"
     env.SetDefault(
             # Command line flags.
