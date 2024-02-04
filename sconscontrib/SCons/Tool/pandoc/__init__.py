@@ -529,9 +529,12 @@ def exists(env):
             f"Could not parse panflute version {panflute_version_}"
         )
 
-    if any(pandoc_version < (2, 10) and panflute_version >= (2,),
-           pandoc_version > (2, 10) and panflute_version < (2,)):
-        raise SCons.Errors.StopError(
+    import panflute
+    try:
+        panflute.convert_text("test")
+    except TypeError as err:
+        if re.search("invalid api version", str(err)):
+            raise SCons.Errors.StopError(
                 PanflutePandocVersionSkew,
                 f"Incompatible Pandoc (version {pandoc_version_}) and "
                 f"Panflute (version {panflute_version_}) found"
