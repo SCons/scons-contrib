@@ -1,6 +1,7 @@
 # MIT License
 #
-# Copyright 2016-2021 Keith F Prussing
+# Copyright 2024 The SCons Foundation
+# Copyright 2016-2024 Keith F Prussing
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
