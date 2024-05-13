@@ -1,0 +1,22 @@
+#!/usr/bin/env python
+#
+# To run the example, place .. in a place SCons will be able to locate
+# via the standard Tool loading.  One possibility would be:
+#
+#    mkdir -p site_scons/site_tools/
+#    cd site_scons/site_tools
+#    ln -s ../../../__init__.py inkscape.py.
+
+import os
+
+env = Environment(ENV=os.environ, tools=["inkscape"])
+
+src = "example"
+
+png = env.Inkscape(src + "-1.png", src + ".svg")
+pdf = env.Inkscape(src + ".pdf", src + ".svg")
+wmf = env.Inkscape(src + ".wmf", src + ".svg")
+pdf_tex = env.Inkscape(src + "-2.pdf", src + ".svg",
+                       INKSCAPEFLAGS="--export-latex")
+
+png2 = env.Inkscape(src + "-2.svg", pdf)
