@@ -21,7 +21,7 @@
 # CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 # TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-__doc__="""SCons.Tool.Inkscape
+"""SCons.Tool.Inkscape
 
 Builders for converting vector graphics using Inkscape.  Specifically,
 converting SVG to PDF, PDF + ``LaTeX``, and PNG and PDF to PNG.
